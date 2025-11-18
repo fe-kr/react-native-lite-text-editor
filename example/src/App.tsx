@@ -1,12 +1,10 @@
-import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'react-native-lite-text-editor';
-
-const result = multiply(3, 7);
+import { View, StyleSheet } from 'react-native';
+import { TextEditor } from 'react-native-lite-text-editor';
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <TextEditor placeholder="Type text here..." />
     </View>
   );
 }

@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    <title>React Native Lite Text Editor</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0"
+    />
+
+    <style id="rnlte-default-style">
+      /* RNLTE-DEFAULT-STYLE-PLACEHOLDER */
+
+      * {
+        outline: none;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      .rnlte-root {
+        font-family: system-ui;
+        overflow-y: auto;
+        padding: 1rem;
+        width: 100%;
+        height: 100%;
+      }
+
+      .rnlte-root[placeholder]:empty::before {
+        content: attr(placeholder);
+      }
+
+      .rnlte-root[placeholder]:empty:focus::before {
+        content: '';
+      }
+
+      .rnlte-root[contenteditable='false'] {
+        pointer-events: none;
+      }
+    </style>
+
+    <style id="rnlte-style">
+      /* RNLTE-STYLE-PLACEHOLDER */
+    </style>
+
+    <script id="rnlte-script" type="module">
+      import Editor from './web-editor.module.ts';
+
+      new Editor();
+    </script>
+  </head>
+
+  <body>
+    <div id="rnlte-root" class="rnlte-root"><!-- RNLTE-ROOT-PLACEHOLDER --></div>
+
+    <!-- RNLTE-SCRIPT-PLACEHOLDER -->
+  </body>
+</html>
