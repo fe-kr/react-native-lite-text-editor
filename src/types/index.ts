@@ -1,7 +1,6 @@
 import type WebView from 'react-native-webview';
 import type { DocumentCommand } from '../commands';
 import type { DocumentCommandId, EditorEvent } from '../config/enum';
-import type { ValueOf } from './utils';
 import type {
   LayoutRectangle,
   NativeSyntheticEvent,
@@ -11,6 +10,7 @@ import type {
 export type DocumentCommandId = ValueOf<typeof DocumentCommandId>;
 export type HTMLElementTag = keyof HTMLElementTagNameMap;
 export type EditorEvent = ValueOf<typeof EditorEvent>;
+export type ValueOf<T extends object> = T[keyof T];
 
 export interface ExtendedWebView extends WebView {
   focus: () => void;

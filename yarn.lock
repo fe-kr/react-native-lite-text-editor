@@ -3379,6 +3379,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-vector-icons/common@npm:^12.4.0":
+  version: 12.4.0
+  resolution: "@react-native-vector-icons/common@npm:12.4.0"
+  dependencies:
+    find-up: "npm:^7.0.0"
+    picocolors: "npm:^1.1.1"
+    plist: "npm:^3.1.0"
+  peerDependencies:
+    "@react-native-vector-icons/get-image": ^12.3.0
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    "@react-native-vector-icons/get-image":
+      optional: true
+  bin:
+    rnvi-update-plist: lib/commonjs/scripts/updatePlist.js
+  checksum: 10c0/432189eb31408661389df2257ec66640eeef590374c7918c663d7791d24c85bb3def2984310b4272cdc7f20bf0bf831f813a24c212e4f3f6eb2c16a999052315
+  languageName: node
+  linkType: hard
+
+"@react-native-vector-icons/material-icons@npm:^12.4.0":
+  version: 12.4.0
+  resolution: "@react-native-vector-icons/material-icons@npm:12.4.0"
+  dependencies:
+    "@react-native-vector-icons/common": "npm:^12.4.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/21d922445143f4ca41e80d6bb40162ea8815542687138115aaaff828658e6cc3d351e547fb103a2306b3184157555225d56aa00888896f1c84bc90453636dcdc
+  languageName: node
+  linkType: hard
+
 "@react-native/assets-registry@npm:0.81.5":
   version: 0.81.5
   resolution: "@react-native/assets-registry@npm:0.81.5"
@@ -6912,7 +6944,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-font@npm:~14.0.9":
+"expo-font@npm:^14.0.9, expo-font@npm:~14.0.9":
   version: 14.0.9
   resolution: "expo-font@npm:14.0.9"
   dependencies:
@@ -11309,7 +11341,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"plist@npm:^3.0.5":
+"plist@npm:^3.0.5, plist@npm:^3.1.0":
   version: 3.1.0
   resolution: "plist@npm:3.1.0"
   dependencies:
@@ -11675,7 +11707,9 @@ __metadata:
   resolution: "react-native-lite-text-editor-example@workspace:example"
   dependencies:
     "@expo/metro-runtime": "npm:~6.1.2"
+    "@react-native-vector-icons/material-icons": "npm:^12.4.0"
     expo: "npm:~54.0.24"
+    expo-font: "npm:^14.0.9"
     expo-status-bar: "npm:~3.0.8"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"

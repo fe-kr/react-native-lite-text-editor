@@ -1,4 +1,3 @@
-import type { ColorValue } from 'react-native';
 import { InnerDocumentCommandId, DocumentCommandId } from '../config/enum';
 import type { Action, ActionCreator, HTMLElementTag } from '../types';
 
@@ -187,13 +186,13 @@ export const formatBlock: ActionCreator<HTMLElementTag> = (payload, meta) => ({
   meta: meta ?? { focusable: true, selectable: true },
 });
 
-export const foreColor: ActionCreator<ColorValue> = (payload, meta) => ({
+export const foreColor: ActionCreator<string> = (payload, meta) => ({
   type: DocumentCommandId.FORE_COLOR,
   payload,
   meta: meta ?? { focusable: true, selectable: true },
 });
 
-export const backColor: ActionCreator<ColorValue> = (payload, meta) => ({
+export const backColor: ActionCreator<string> = (payload, meta) => ({
   type: DocumentCommandId.BACK_COLOR,
   payload,
   meta: meta ?? { focusable: true, selectable: true },
