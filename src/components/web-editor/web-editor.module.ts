@@ -1,5 +1,4 @@
 import { debounce } from './web-editor.lib';
-import { isActionLike } from '../../utils/guards';
 import { EditorEvent } from '../../config/enum';
 
 import { EditorService } from './web-editor.service';
@@ -79,7 +78,7 @@ export default class EditorModule {
     try {
       const data = JSON.parse(message);
 
-      return isActionLike<Action>(data) ? data : null;
+      return data && typeof data === 'object' ? data : null;
     } catch {
       return null;
     }

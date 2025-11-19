@@ -1,5 +1,5 @@
-import { InnerDocumentCommandId } from '../config/enum';
-import type { DocumentCommand } from './command';
+import { InnerDocumentCommandId } from '../../../config/enum';
+import type { DocumentCommand } from '../../../config/command';
 
 export class InsertStyle implements DocumentCommand {
   readonly id = InnerDocumentCommandId.INSERT_STYLE;

@@ -1,4 +1,4 @@
-import { InnerDocumentCommandId, DocumentCommandId } from '../config/enum';
+import { InnerDocumentCommandId, DocumentCommandId } from './enum';
 import type { Action, ActionCreator, HTMLElementTag } from '../types';
 
 export const bold: Action = {

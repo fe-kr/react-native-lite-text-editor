@@ -1,5 +1,7 @@
-import Commands from '../../commands';
-import type { DocumentCommand } from '../../commands';
+import * as Commands from './commands/base';
+import { InsertStyle } from './commands/insert-style';
+import { SetAttribute } from './commands/set-attribute';
+import type { DocumentCommand } from '../../config/command';
 import type {
   CommandsInfo,
   DocumentCommandConstructor,
@@ -17,33 +19,31 @@ export class EditorService {
     this.commands = new Map();
 
     this.setCommands();
-
-    this.setExtraCommands();
   }
 
   setCommands() {
-    const { commands } = this.options ?? {};
+    const { commands: commandsIds = [], extraCommands: rawExtraCommands = [] } =
+      this.options ?? {};
 
-    Object.values(Commands).forEach((Command) => {
-      const command = new Command(this.view);
+    const commands = Object.values(Commands);
 
-      if (commands && commands[0] !== '*' && !commands.includes(command.id))
-        return;
-
-      this.commands.set(command.id, command);
-    });
-  }
-
-  setExtraCommands() {
-    this.options?.extraCommands.forEach((str) => {
+    const extraCommands = rawExtraCommands?.map<DocumentCommandConstructor>(
       // eslint-disable-next-line no-new-func
-      const Command = new Function(
-        `return ${str}`
-      )() as DocumentCommandConstructor;
+      (str) => new Function(`return ${str}`)()
+    );
 
-      const command = new Command(this.view);
+    [...commands, ...extraCommands, InsertStyle, SetAttribute].forEach(
+      (Command) => {
+        const command = new Command(this.view);
 
-      this.commands.set(command.id, command);
+        this.commands.set(command.id, command);
+      }
+    );
+
+    commandsIds.forEach((id) => {
+      if (!this.commands.has(id)) return;
+
+      this.commands.delete(id);
     });
   }
 

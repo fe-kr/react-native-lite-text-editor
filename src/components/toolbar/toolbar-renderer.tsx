@@ -1,7 +1,6 @@
 import { Platform, View } from 'react-native';
 import { useToolbar } from './model/toolbar-context';
 import type { Action, CommandsInfo } from '../../types';
-import { isBoolean, isNil } from '../../utils/guards';
 import { ToolbarAccordion } from './toolbar-accordion';
 import { ToolbarItem, type ToolbarItemProps } from './toolbar-item';
 
@@ -121,6 +120,14 @@ const isCustomItem = (item: object): item is CustomToolbarItem => {
 
 const isNestedItem = (item: object): item is NestedToolbarItem => {
   return 'items' in item && !isContainerItem(item);
+};
+
+const isBoolean = (value: unknown) => {
+  return typeof value === 'boolean';
+};
+
+const isNil = (value: unknown) => {
+  return value === null || value === undefined;
 };
 
 const getIsActiveAction = (data?: CommandsInfo, action?: Action) => {

@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { actions } from '../../actions';
+import { setAttribute, focus, insertStyle } from '../../config/actions';
 import type {
   Action,
   DocumentCommandConstructor,
@@ -28,13 +28,12 @@ import {
 } from 'react-native';
 import createHtml from '../web-editor';
 import { EditorEvent } from '../../config/enum';
-import { isActionLike } from '../../utils/guards';
 import type {
   WebViewMessageEvent,
   WebViewNavigation,
   WebViewProps,
 } from 'react-native-webview';
-import { createEvent } from './text-editor.lib';
+import { createEvent, isActionLike } from './text-editor.lib';
 
 export interface TextEditorProps extends WebViewProps {
   autoCapitalize?: TextInputProps['autoCapitalize'];
@@ -142,14 +141,14 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       ref.current?.postMessage(message);
     }, []);
 
-    const focus = useCallback(() => {
+    const focusEditor = useCallback(() => {
       if (Platform.OS === 'android') {
         inputRef.current?.focus();
       }
 
       ref.current?.requestFocus();
 
-      dispatch(actions.focus);
+      dispatch(focus);
     }, [dispatch]);
 
     const onWebViewLoadStart = useCallback(
@@ -165,13 +164,13 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       (e: NativeSyntheticEvent<WebViewNavigation>) => {
         readyRef.current = true;
 
-        dispatch(actions.setAttribute(attributes));
+        dispatch(setAttribute(attributes));
 
-        if (autoFocus && contentEditable) focus();
+        if (autoFocus && contentEditable) focusEditor();
 
         onLoad?.(e);
       },
-      [dispatch, attributes, autoFocus, contentEditable, onLoad, focus]
+      [dispatch, attributes, autoFocus, contentEditable, onLoad, focusEditor]
     );
 
     const onWebViewMessage = useCallback(
@@ -257,27 +256,27 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
         ({
           ...ref.current,
           dispatch,
-          focus,
+          focus: focusEditor,
         } as ExtendedWebView),
-      [dispatch, focus]
+      [dispatch, focusEditor]
     );
 
     useEffect(() => {
       if (!isReady()) return;
 
-      dispatch(actions.insertStyle(styles));
+      dispatch(insertStyle(styles));
     }, [dispatch, isReady, styles]);
 
     useEffect(() => {
       if (!isReady()) return;
 
-      dispatch(actions.setAttribute(attributes));
+      dispatch(setAttribute(attributes));
     }, [dispatch, isReady, attributes]);
 
     useEffect(() => {
       if (!isReady()) return;
 
-      dispatch(actions.setAttribute({ innerHTML: content }));
+      dispatch(setAttribute({ innerHTML: content }));
     }, [dispatch, isReady, content]);
 
     return (

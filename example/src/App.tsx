@@ -10,13 +10,14 @@ import {
   Toolbar,
   type ToolbarProps,
   type CommandsInfo,
+  type ExtendedWebView,
 } from 'react-native-lite-text-editor';
 import { fontKey, toolbarConfig } from './config';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { useFonts } from 'expo-font';
 
 export default function App() {
-  const editorRef = useRef(null!);
+  const editorRef = useRef<ExtendedWebView>(null!);
   const [state, setState] = useState<CommandsInfo>(null!);
 
   const [isLoading] = useFonts({

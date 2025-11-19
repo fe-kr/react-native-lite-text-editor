@@ -1,12 +1,4 @@
 export { TextEditor, type TextEditorProps } from './components/text-editor';
-export {
-  DocumentCommandId,
-  InnerDocumentCommandId,
-  EditorEvent,
-} from './config/enum';
-export { actions } from './actions';
-export { DocumentCommand } from './commands';
-export type { CommandsInfo, ExtendedWebView } from './types';
 
 export {
   Toolbar,
@@ -18,6 +10,11 @@ export {
   ToolbarAccordion,
   type ToolbarAccordionProps,
   useToolbar,
-  useStyle,
   type ToolbarRenderItem,
+  useStyle,
 } from './components/toolbar';
+
+export * as actions from './config/actions';
+export { DocumentCommand } from './config/command';
+export { DocumentCommandId, EditorEvent } from './config/enum';
+export type { CommandsInfo, ExtendedWebView } from './types';

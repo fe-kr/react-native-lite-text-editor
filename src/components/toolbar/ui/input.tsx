@@ -6,7 +6,6 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useState } from 'react';
-import { isFunction } from '../../../utils/guards';
 
 interface InputProps extends TextInputProps {
   inputStyle?: ViewStyle | ((state: InputState) => ViewStyle);
@@ -41,7 +40,9 @@ export const Input = ({
     <View
       style={[
         styles.container,
-        isFunction(inputStyle) ? inputStyle({ isFocused }) : inputStyle,
+        typeof inputStyle === 'function'
+          ? inputStyle({ isFocused })
+          : inputStyle,
       ]}
     >
       {renderLeft?.({ isFocused })}

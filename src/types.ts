@@ -1,6 +1,6 @@
 import type WebView from 'react-native-webview';
-import type { DocumentCommand } from '../commands';
-import type { DocumentCommandId, EditorEvent } from '../config/enum';
+import type { DocumentCommand } from './config/command';
+import type { DocumentCommandId, EditorEvent } from './config/enum';
 import type {
   LayoutRectangle,
   NativeSyntheticEvent,

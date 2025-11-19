@@ -1,5 +1,5 @@
-import { DocumentCommand } from './command';
-import { DocumentCommandId } from '../config/enum';
+import { DocumentCommand } from '../../../config/command';
+import { DocumentCommandId } from '../../../config/enum';
 
 export class Bold extends DocumentCommand {
   readonly id = DocumentCommandId.BOLD;
