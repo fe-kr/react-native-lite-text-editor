@@ -1,9 +1,9 @@
-import * as Commands from './commands/base';
+import * as BaseCommands from './commands/base-commands';
 import { InsertStyle } from './commands/insert-style';
 import { SetAttribute } from './commands/set-attribute';
-import type { DocumentCommand } from '../../config/command';
 import type {
   CommandsInfo,
+  DocumentCommand,
   DocumentCommandConstructor,
   EditorTransferObject,
   HTMLElementInfo,
@@ -22,15 +22,13 @@ export class EditorService {
   }
 
   setCommands() {
-    const { commands: commandsIds = [], extraCommands: rawExtraCommands = [] } =
-      this.options ?? {};
+    const commands = Object.values(BaseCommands);
 
-    const commands = Object.values(Commands);
-
-    const extraCommands = rawExtraCommands?.map<DocumentCommandConstructor>(
-      // eslint-disable-next-line no-new-func
-      (str) => new Function(`return ${str}`)()
-    );
+    const extraCommands =
+      this.options?.extraCommands.map<DocumentCommandConstructor>(
+        // eslint-disable-next-line no-new-func
+        (str) => new Function(`return ${str}`)()
+      ) ?? [];
 
     [...commands, ...extraCommands, InsertStyle, SetAttribute].forEach(
       (Command) => {
@@ -40,7 +38,7 @@ export class EditorService {
       }
     );
 
-    commandsIds.forEach((id) => {
+    this.options?.commands.forEach((id) => {
       if (!this.commands.has(id)) return;
 
       this.commands.delete(id);

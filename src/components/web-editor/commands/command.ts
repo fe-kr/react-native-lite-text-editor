@@ -1,4 +1,6 @@
-export abstract class DocumentCommand {
+import { type DocumentCommand as Command } from '../../../types';
+
+export abstract class DocumentCommand implements Command {
   abstract id: string;
 
   queryState(): string | boolean {
@@ -11,10 +13,6 @@ export abstract class DocumentCommand {
 
   queryEnabled() {
     return document.queryCommandEnabled(this.id);
-  }
-
-  querySupported() {
-    return document.queryCommandSupported(this.id);
   }
 
   exec(value?: unknown) {

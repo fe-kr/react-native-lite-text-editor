@@ -1,5 +1,5 @@
 import { InnerDocumentCommandId } from '../../../config/enum';
-import type { DocumentCommand } from '../../../config/command';
+import type { DocumentCommand } from '../../../types';
 
 export class SetAttribute implements DocumentCommand {
   readonly id = InnerDocumentCommandId.SET_ATTRIBUTE;
@@ -15,10 +15,6 @@ export class SetAttribute implements DocumentCommand {
   }
 
   queryEnabled() {
-    return true;
-  }
-
-  querySupported() {
     return true;
   }
 

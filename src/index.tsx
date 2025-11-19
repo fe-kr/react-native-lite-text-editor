@@ -15,6 +15,5 @@ export {
 } from './components/toolbar';
 
 export * as actions from './config/actions';
-export { DocumentCommand } from './config/command';
 export { DocumentCommandId, EditorEvent } from './config/enum';
-export type { CommandsInfo, ExtendedWebView } from './types';
+export type { CommandsInfo, ExtendedWebView, DocumentCommand } from './types';

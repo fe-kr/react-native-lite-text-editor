@@ -1,5 +1,5 @@
 import { InnerDocumentCommandId } from '../../../config/enum';
-import type { DocumentCommand } from '../../../config/command';
+import type { DocumentCommand } from '../../../types';
 
 export class InsertStyle implements DocumentCommand {
   readonly id = InnerDocumentCommandId.INSERT_STYLE;
@@ -13,10 +13,6 @@ export class InsertStyle implements DocumentCommand {
   }
 
   queryEnabled() {
-    return true;
-  }
-
-  querySupported() {
     return true;
   }
 

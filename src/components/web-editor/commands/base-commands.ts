@@ -1,4 +1,4 @@
-import { DocumentCommand } from '../../../config/command';
+import { DocumentCommand } from './command';
 import { DocumentCommandId } from '../../../config/enum';
 
 export class Bold extends DocumentCommand {

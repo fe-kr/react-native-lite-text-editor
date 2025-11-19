@@ -1,5 +1,4 @@
 import type WebView from 'react-native-webview';
-import type { DocumentCommand } from './config/command';
 import type { DocumentCommandId, EditorEvent } from './config/enum';
 import type {
   LayoutRectangle,
@@ -16,10 +15,6 @@ export interface ExtendedWebView extends WebView {
   focus: () => void;
   dispatch: (action: Action) => void;
 }
-
-export type DocumentCommandConstructor<
-  T extends DocumentCommand = DocumentCommand
-> = new (editor: HTMLElement) => T;
 
 export type ActionMeta = {
   focusable?: boolean;
@@ -46,14 +41,6 @@ export type HTMLElementInfo = {
   [P in keyof React.AllHTMLAttributes<unknown>]?: string;
 } & LayoutRectangle;
 
-export type CommandsInfo = Record<
-  DocumentCommandId | (string & {}),
-  {
-    state: string | boolean;
-    enabled: boolean;
-  }
->;
-
 export type Event<T> = Pick<
   NativeSyntheticEvent<T>,
   'type' | 'timeStamp' | 'nativeEvent'
@@ -70,6 +57,26 @@ export type EventData = {
   [EditorEvent.INPUT]: Pick<InputEvent, 'inputType' | 'data'>;
   [EditorEvent.PRESS]: HTMLElementInfo;
 };
+
+export interface DocumentCommand {
+  id: string;
+  queryState(): string | boolean;
+  queryValue(): string;
+  queryEnabled(): boolean;
+  exec(value?: unknown): boolean;
+}
+
+export type CommandsInfo = Record<
+  DocumentCommandId | (string & {}),
+  {
+    state: ReturnType<DocumentCommand['queryState']>;
+    enabled: ReturnType<DocumentCommand['queryEnabled']>;
+  }
+>;
+
+export type DocumentCommandConstructor<
+  T extends DocumentCommand = DocumentCommand
+> = new (editor: HTMLElement) => T;
 
 export interface EditorTransferObject {
   listeners: Record<EditorEvent, boolean>;
