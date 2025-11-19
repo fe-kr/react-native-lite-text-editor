@@ -106,6 +106,11 @@ export const focus: Action = {
   meta: { focusable: true },
 };
 
+export const select: Action = {
+  type: InnerDocumentCommandId.SELECT,
+  meta: { selectable: true },
+};
+
 export const copy: Action = {
   type: DocumentCommandId.COPY,
   meta: { focusable: true },

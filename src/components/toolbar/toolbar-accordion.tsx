@@ -4,22 +4,18 @@ import { ToolbarItem, type ToolbarItemProps } from './toolbar-item';
 import { StyleSheet } from 'react-native';
 import { useStyle } from './model/style-context';
 
-type Option = Pick<ToolbarItemProps, 'name' | 'value' | 'id'>;
-
 export interface ToolbarAccordionProps extends Partial<PopoverProps> {
   type: ToolbarItemProps['type'];
+  name?: string;
   value?: string;
-  option?: Option;
-  defaultOption?: Option;
 }
 
 export const ToolbarAccordion = ({
   type,
+  name,
   value,
   style,
   containerStyle,
-  option,
-  defaultOption,
   children,
   ...props
 }: ToolbarAccordionProps) => {
@@ -46,8 +42,8 @@ export const ToolbarAccordion = ({
       containerStyle={[popoverProps?.containerStyle, containerStyle]}
       anchor={
         <ToolbarItem
-          name={option?.name ?? defaultOption?.name}
-          value={value ?? option?.value ?? defaultOption?.value}
+          name={name}
+          value={value}
           type={type}
           selected={isOpen}
           style={style}

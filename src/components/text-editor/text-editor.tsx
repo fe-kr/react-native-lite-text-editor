@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { setAttribute, focus, insertStyle } from '../../config/actions';
+import { setAttribute, focus, select, insertStyle } from '../../config/actions';
 import type {
   Action,
   DocumentCommandConstructor,
@@ -40,6 +40,7 @@ export interface TextEditorProps extends WebViewProps {
   autoCorrect?: 'on' | 'off';
   autoFocus?: boolean;
   contentEditable?: boolean;
+  initialSelect?: boolean;
   enterKeyHint?: TextInputProps['enterKeyHint'];
   placeholder?: string;
   content?: string;
@@ -68,6 +69,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       placeholder = '',
       enterKeyHint = 'enter',
       content = '',
+      initialSelect = false,
       source,
       defaultStyles,
       styles,
@@ -168,9 +170,19 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
 
         if (autoFocus && contentEditable) focusEditor();
 
+        if (initialSelect) dispatch(select);
+
         onLoad?.(e);
       },
-      [dispatch, attributes, autoFocus, contentEditable, onLoad, focusEditor]
+      [
+        dispatch,
+        attributes,
+        autoFocus,
+        contentEditable,
+        focusEditor,
+        initialSelect,
+        onLoad,
+      ]
     );
 
     const onWebViewMessage = useCallback(

@@ -35,10 +35,12 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <TextEditor
+        initialSelect
         ref={editorRef}
         containerStyle={styles.container}
         onSelectionChange={(e) => setState(e.nativeEvent.data)}
         placeholder="Type text here..."
+        content="<b>Hello World</b>"
       />
 
       <Toolbar

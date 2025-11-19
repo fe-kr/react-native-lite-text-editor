@@ -60,5 +60,6 @@ export const DocumentCommandId = {
 export const InnerDocumentCommandId = {
   INSERT_STYLE: 'insertStyle',
   FOCUS: 'focus',
+  SELECT: 'select',
   SET_ATTRIBUTE: 'setAttribute',
 } as const;

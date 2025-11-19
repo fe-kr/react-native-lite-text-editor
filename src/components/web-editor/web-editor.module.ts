@@ -42,15 +42,18 @@ export default class EditorModule {
     });
 
     if (options?.listeners[EditorEvent.SELECT]) {
-      const onKeyDown = (e: KeyboardEvent) =>
-        e.key === 'Backspace' && this.onSelect();
-
-      this.view.addEventListener('keyup', onKeyDown);
       this.view.addEventListener('keydown', this.onSelect);
       this.view.addEventListener('touchcancel', this.onSelect);
       this.view.addEventListener('touchend', this.onSelect);
       this.view.addEventListener('mouseup', this.onSelect);
+      this.view.addEventListener('keyup', (e) => {
+        if (e.key === 'Backspace') this.onSelect();
+      });
     }
+
+    this.view.addEventListener('input', () => {
+      if (this.view.innerHTML === '<br>') this.view.innerHTML = '';
+    });
 
     (options?.platform === 'android' ? document : window).addEventListener(
       'message',
@@ -93,8 +96,6 @@ export default class EditorModule {
   };
 
   onChange = debounce(() => {
-    if (this.view.innerHTML === '<br>') this.view.innerHTML = '';
-
     this.postMessage(EditorEvent.CHANGE, { text: this.view.innerHTML });
   }, 50);
 

@@ -59,34 +59,36 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
   }
 
   if (isNestedItem(props)) {
-    const { type, value, items, defaultValue, closeable, ...restProps } = props;
+    const { type, name, value, items, defaultValue, closeable, ...restProps } =
+      props;
 
     const option = isNil(value)
       ? items.find(
           (item) => 'action' in item && getIsActiveAction(data, item.action)
         )
-      : undefined;
+      : null;
 
     const defaultOption = !isNil(defaultValue)
-      ? items.find((item) => 'value' in item && value === defaultValue)
-      : undefined;
+      ? items.find((item) => 'value' in item && item.value === defaultValue)
+      : null;
 
-    const selectable = !!(defaultValue && option);
+    const selectedOption = (option ??
+      defaultOption) as DefaultToolbarItem | null;
+    const selectable = !isNil(defaultValue && selectedOption?.id);
 
     return (
       <ToolbarAccordion
         {...restProps}
         transparent
         type={type}
-        value={value}
+        name={name ?? selectedOption?.name}
+        value={value ?? selectedOption?.value}
         onShow={Platform.OS === 'web' ? focus : undefined}
-        option={option}
-        defaultOption={defaultOption}
       >
         {items.map((item, index) => (
           <ToolbarRenderer
             {...item}
-            {...(selectable && { selected: item.id === option.id })}
+            {...(selectable && { selected: item.id === selectedOption?.id })}
             onClose={closeable ? close : undefined}
             key={item.id ?? index}
           />
