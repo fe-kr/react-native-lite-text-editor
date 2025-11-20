@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { Platform } from 'react-native';
 import {
   type ToolbarRenderItem,
+  type ToolbarProps,
   DocumentCommandId,
   actions,
   useToolbar,
@@ -30,6 +31,11 @@ export const fontKey = Platform.select({
   web: 'MaterialIcons-Regular',
   default: 'MaterialIcons',
 });
+
+export const dropdownIconProps: ToolbarProps['dropdownIconProps'] = {
+  name: 'arrow-drop-down',
+  style: { marginLeft: 4 },
+};
 
 export const toolbarConfig: ToolbarRenderItem[] = [
   {
@@ -144,7 +150,7 @@ export const toolbarConfig: ToolbarRenderItem[] = [
             'looks-5',
             'looks-6',
           ][i],
-          action: actions.fontSize((i + 1) as any),
+          action: actions.fontSize(i + 1),
         })),
       },
       {
@@ -153,13 +159,21 @@ export const toolbarConfig: ToolbarRenderItem[] = [
         containerStyle: { gap: 4, padding: 4 },
         items: (
           [
-            { name: 'Arial', value: 'Arial, sans-serif' },
-            { name: 'Times New Roman', value: '"Times New Roman", serif' },
+            {
+              name: 'Arial',
+              value: 'Arial, sans-serif',
+              style: { fontFamily: 'sans-serif', fontSize: 16 },
+            },
+            {
+              name: 'Times New Roman',
+              value: '"Times New Roman", serif',
+              style: { fontFamily: 'serif', fontSize: 16 },
+            },
           ] as const
-        ).map(({ name, value }) => ({
+        ).map(({ value, ...rest }) => ({
+          ...rest,
           id: `${DocumentCommandId.FONT_NAME}.${value}`,
           type: 'text',
-          name,
           value,
           action: actions.fontName(value),
         })),
@@ -168,8 +182,9 @@ export const toolbarConfig: ToolbarRenderItem[] = [
         type: 'icon',
         value: 'format-color-text',
         containerStyle: {
-          maxWidth: 40,
+          maxWidth: 110,
           flexDirection: 'row',
+          justifyContent: 'center',
           flexWrap: 'wrap',
         },
         items: colorOptions.map((value) => ({
@@ -183,8 +198,9 @@ export const toolbarConfig: ToolbarRenderItem[] = [
         type: 'icon',
         value: 'format-color-fill',
         containerStyle: {
-          maxWidth: 100,
+          maxWidth: 110,
           flexDirection: 'row',
+          justifyContent: 'center',
           flexWrap: 'wrap',
         },
         items: colorOptions.map((value) => ({
@@ -298,11 +314,11 @@ export const toolbarConfig: ToolbarRenderItem[] = [
             type: 'custom',
             Component: () => {
               const { dispatch, data } = useToolbar();
+              const { state } = data?.[DocumentCommandId.CREATE_LINK] ?? {};
 
               return createElement(ToolbarForm, {
                 id: DocumentCommandId.CREATE_LINK,
-                defaultValue: data?.[DocumentCommandId.CREATE_LINK]
-                  ?.state as string,
+                defaultValue: (state || '') as string,
                 onSubmit: (href) => dispatch(actions.createLink(href)),
                 pattern:
                   /^(https?:\/\/)(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?::\d{2,5})?(?:\/[^\s]*)?$/,

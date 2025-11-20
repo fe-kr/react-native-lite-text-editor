@@ -12,7 +12,6 @@ import {
   StyleSheet,
   Pressable,
   type ViewStyle,
-  Animated,
   type ModalProps,
   type StyleProp,
   Keyboard,
@@ -23,12 +22,14 @@ import {
   type NativeSyntheticEvent,
   ScrollView,
   StatusBar,
+  Animated,
 } from 'react-native';
 
 export interface PopoverProps extends ModalProps {
   anchor: React.ReactNode;
   statusBarHeight?: number;
   anchorPosition?: 'top' | 'bottom';
+  animationDuration?: number;
   wrapperStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   overlayStyle?: StyleProp<ViewStyle>;
@@ -37,7 +38,8 @@ export interface PopoverProps extends ModalProps {
 export const Popover = ({
   children,
   anchor,
-  anchorPosition = 'bottom',
+  anchorPosition = 'top',
+  animationDuration = 150,
   statusBarHeight = StatusBar.currentHeight ?? 0,
   onShow,
   onRequestClose,
@@ -55,14 +57,11 @@ export const Popover = ({
   const prevVisible = useRef(false);
 
   const [isOpen, setIsOpen] = useState(visible);
-  const [menuLayout, setMenuLayout] = useState<LayoutRectangle>(
-    defaultLayoutRectangle
-  );
-  const [anchorLayout, setAnchorLayout] = useState<LayoutRectangle>(
-    defaultLayoutRectangle
-  );
+  const [menuLayout, setMenuLayout] = useState<LayoutRectangle>(defaultLayout);
+  const [anchorLayout, setAnchorLayout] =
+    useState<LayoutRectangle>(defaultLayout);
   const [windowLayout, setWindowLayout] = useState<LayoutRectangle>(() => ({
-    ...defaultLayoutRectangle,
+    ...defaultLayout,
     ...Dimensions.get('window'),
   }));
 
@@ -92,7 +91,7 @@ export const Popover = ({
     setMenuLayout(menuLayoutResult);
 
     setWindowLayout({
-      ...defaultLayoutRectangle,
+      ...defaultLayout,
       ...windowLayoutResult,
       height: windowLayoutResult.height - keyboardHeightRef.current,
     });
@@ -107,7 +106,7 @@ export const Popover = ({
     });
 
     onShow?.(null!);
-  }, [onShow]);
+  }, [animationDuration, onShow]);
 
   const close = useCallback(
     (e?: NativeSyntheticEvent<any>) => {
@@ -119,13 +118,13 @@ export const Popover = ({
         if (finished) {
           setIsOpen(false);
           prevIsOpenRef.current = false;
-          setMenuLayout(defaultLayoutRectangle);
+          setMenuLayout(defaultLayout);
         }
       });
 
       onRequestClose?.(e!);
     },
-    [onRequestClose]
+    [animationDuration, onRequestClose]
   );
 
   const updateVisibility = useCallback(
@@ -148,7 +147,7 @@ export const Popover = ({
   const anchorTop =
     anchorPosition === 'bottom'
       ? anchorLayout.y + anchorLayout.height
-      : anchorLayout.y;
+      : anchorLayout.y - anchorLayout.height;
 
   const left = useMemo(() => {
     const windowOffsetX = windowLayout.width - menuLayout.width - SCREEN_INDENT;
@@ -272,16 +271,22 @@ export const Popover = ({
     >
       {anchor}
 
-      <Modal {...props} visible={isOpen} onRequestClose={close}>
+      <Modal
+        {...props}
+        animationType="none"
+        visible={isOpen}
+        onRequestClose={close}
+        onDismiss={close}
+      >
         <Pressable style={[styles.overlay, overlayStyle]} onPress={close}>
           <Animated.View
             ref={menuRef}
             style={[
               {
                 opacity: opacityRef.current,
-                top: top + statusBarHeight,
+                top: top + (menuScrollHeight ? statusBarHeight : 0),
+                [isRTL ? 'right' : 'left']: left,
                 height: menuScrollHeight || undefined,
-                ...(isRTL ? { right: left } : { left }),
               },
               styles.containerStyle,
               containerStyle,
@@ -290,7 +295,9 @@ export const Popover = ({
             collapsable={false}
           >
             <ContentWrapper
-              {...(!!menuScrollHeight && { height: menuScrollHeight })}
+              {...(!!menuScrollHeight && {
+                style: { height: menuScrollHeight },
+              })}
             >
               {children}
             </ContentWrapper>
@@ -303,7 +310,9 @@ export const Popover = ({
 
 const SCREEN_INDENT = 8;
 
-const defaultLayoutRectangle = {
+const { isRTL } = I18nManager.getConstants();
+
+const defaultLayout = {
   x: 0,
   y: 0,
   width: 0,
@@ -318,9 +327,6 @@ const measureInWindow = <T extends React.ComponentRef<View>>({
       res({ x, y, width, height })
     );
   });
-
-const animationDuration = 150;
-const { isRTL } = I18nManager.getConstants();
 
 const styles = StyleSheet.create({
   wrapperStyle: {

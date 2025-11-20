@@ -99,13 +99,14 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
 
   const { action, onClose, ...restProps } = props;
   const { enabled } = data && action ? data[action.type] ?? {} : {};
+  const showKeyboard = Platform.OS === 'web' || action?.meta?.showKeyboard;
 
   return (
     <ToolbarItem
       {...restProps}
       disabled={restProps.disabled ?? (isBoolean(enabled) && !enabled)}
       selected={restProps.selected ?? getIsActiveAction(data, action)}
-      onPressIn={action?.meta?.focusable ? focus : restProps.onPressIn}
+      onPressIn={showKeyboard ? focus : restProps.onPressIn}
       onPressOut={onClose ?? restProps.onPressOut}
       onPress={action ? () => dispatch(action) : restProps.onPress}
     />

@@ -12,7 +12,7 @@ import {
   type CommandsInfo,
   type ExtendedWebView,
 } from 'react-native-lite-text-editor';
-import { fontKey, toolbarConfig } from './config';
+import { dropdownIconProps, fontKey, toolbarConfig } from './config';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { useFonts } from 'expo-font';
 
@@ -45,7 +45,8 @@ export default function App() {
 
       <Toolbar
         horizontal
-        Icon={MaterialIcons as ToolbarProps<CommandsInfo>['Icon']}
+        Icon={MaterialIcons as ToolbarProps['Icon']}
+        dropdownIconProps={dropdownIconProps}
         editorRef={editorRef}
         data={state}
         config={toolbarConfig}

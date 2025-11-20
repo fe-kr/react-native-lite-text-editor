@@ -19,6 +19,7 @@ export interface ExtendedWebView extends WebView {
 export type ActionMeta = {
   focusable?: boolean;
   selectable?: boolean;
+  showKeyboard?: boolean;
 };
 
 export type Action<

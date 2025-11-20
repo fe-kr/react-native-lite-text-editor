@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { type PopoverProps } from './ui/popover';
+import { type IconProps } from './ui/icon';
 import { ToolbarItem, type ToolbarItemProps } from './toolbar-item';
 import { StyleSheet } from 'react-native';
 import { useStyle } from './model/style-context';
@@ -21,8 +22,9 @@ export const ToolbarAccordion = ({
 }: ToolbarAccordionProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const {
+    Icon,
     Popover,
-    DropdownIcon,
+    dropdownIconProps,
     iconSize,
     tintColor,
     activeTintColor,
@@ -50,10 +52,10 @@ export const ToolbarAccordion = ({
           containerStyle={styles.row}
           onPress={onOpen}
         >
-          <DropdownIcon
+          <Icon
+            {...(dropdownIconProps ?? ({} as IconProps))}
             color={isOpen ? activeTintColor : tintColor}
             size={iconSize}
-            style={styles.dropdownIcon}
           />
         </ToolbarItem>
       }
@@ -66,8 +68,5 @@ export const ToolbarAccordion = ({
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-  },
-  dropdownIcon: {
-    marginLeft: 4,
   },
 });

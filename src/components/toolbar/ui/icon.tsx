@@ -7,14 +7,6 @@ export interface IconProps extends TextProps, React.RefAttributes<Text> {
   innerRef?: React.Ref<Text>;
 }
 
-export const Icon: React.ComponentType<IconProps> = getDefaultIcon();
-
-function getDefaultIcon() {
-  try {
-    const module = require('@react-native-vector-icons/material-icons');
-
-    return module?.default ?? module;
-  } catch {
-    return (props: TextProps) => <Text {...props}>?</Text>;
-  }
-}
+export const Icon: React.ComponentType<IconProps> = (props: TextProps) => (
+  <Text {...props}>?</Text>
+);

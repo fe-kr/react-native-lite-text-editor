@@ -11717,6 +11717,7 @@ __metadata:
     react-native-builder-bob: "npm:^0.40.15"
     react-native-monorepo-config: "npm:^0.1.9"
     react-native-web: "npm:~0.21.0"
+    react-native-webview: "npm:^13.16.0"
   languageName: unknown
   linkType: soft
 

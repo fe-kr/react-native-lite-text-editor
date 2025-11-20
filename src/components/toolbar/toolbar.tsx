@@ -7,11 +7,11 @@ import { ToolbarRenderer, type ToolbarRenderItem } from './toolbar-renderer';
 import type { CommandsInfo, ExtendedWebView } from '../../types';
 import { ToolbarContext } from './model/toolbar-context';
 import { memo, useMemo } from 'react';
-import { Icon as DefaultIcon, type IconProps } from './ui/icon';
+import { Icon as DefaultIcon } from './ui/icon';
 import { Popover as DefaultPopover } from './ui/popover';
 import { type StyleParams, StyleContext } from './model/style-context';
 
-export interface ToolbarProps<T>
+export interface ToolbarProps<T = CommandsInfo>
   extends Omit<FlatListProps<ToolbarRenderItem>, 'data' | 'renderItem'>,
     Partial<StyleParams> {
   data: T;
@@ -28,7 +28,7 @@ const Toolbar = <T extends CommandsInfo>({
   activeTintColor = 'rgb(77, 77, 230)',
   iconSize = 20,
   renderItem = renderToolbarItem,
-  DropdownIcon = DefaultDropdownIcon,
+  dropdownIconProps,
   Icon = DefaultIcon,
   Popover = DefaultPopover,
   popoverProps,
@@ -40,14 +40,14 @@ const Toolbar = <T extends CommandsInfo>({
     () => ({
       Icon,
       Popover,
-      DropdownIcon,
+      dropdownIconProps,
       tintColor,
       activeTintColor,
       iconSize,
       popoverProps,
     }),
     [
-      DropdownIcon,
+      dropdownIconProps,
       Icon,
       Popover,
       activeTintColor,
@@ -72,10 +72,6 @@ const Toolbar = <T extends CommandsInfo>({
 };
 
 const noop = () => {};
-
-const DefaultDropdownIcon = (props: Partial<IconProps>) => (
-  <DefaultIcon {...props} name="arrow-drop-down" />
-);
 
 const renderToolbarItem: ListRenderItem<ToolbarRenderItem> = ({ item }) => (
   <ToolbarRenderer {...item} />

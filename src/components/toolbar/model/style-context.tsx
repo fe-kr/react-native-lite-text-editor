@@ -6,10 +6,10 @@ export interface StyleParams {
   tintColor: string;
   activeTintColor: string;
   iconSize: number;
-  DropdownIcon: React.ComponentType<Partial<IconProps>>;
-  popoverProps?: Partial<PopoverProps>;
   Icon: React.ComponentType<IconProps>;
+  dropdownIconProps?: IconProps;
   Popover: React.ComponentType<PopoverProps>;
+  popoverProps?: Partial<PopoverProps>;
 }
 
 export const StyleContext = createContext<StyleParams>(null!);
