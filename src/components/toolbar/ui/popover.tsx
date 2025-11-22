@@ -8,45 +8,50 @@ import {
 } from 'react';
 import {
   View,
-  Modal,
   StyleSheet,
   Pressable,
   type ViewStyle,
-  type ModalProps,
   type StyleProp,
   Keyboard,
   Dimensions,
   Platform,
   type LayoutRectangle,
   I18nManager,
-  type NativeSyntheticEvent,
   ScrollView,
   StatusBar,
   Animated,
+  BackHandler,
+  Modal,
+  type ModalProps,
 } from 'react-native';
 
 export interface PopoverProps extends ModalProps {
   anchor: React.ReactNode;
   statusBarHeight?: number;
   anchorPosition?: 'top' | 'bottom';
-  animationDuration?: number;
+  enterAnimation?: Animated.TimingAnimationConfig;
+  leaveAnimation?: Animated.TimingAnimationConfig;
+  onShow?: () => void;
+  onDismiss?: () => void;
   wrapperStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   overlayStyle?: StyleProp<ViewStyle>;
 }
 
 export const Popover = ({
+  visible = false,
   children,
   anchor,
   anchorPosition = 'top',
-  animationDuration = 150,
+  enterAnimation = defaultEnterAnimation,
+  leaveAnimation = defaultLeaveAnimation,
   statusBarHeight = StatusBar.currentHeight ?? 0,
   onShow,
-  onRequestClose,
+  onDismiss,
   wrapperStyle,
   containerStyle,
   overlayStyle,
-  visible = false,
+  transparent = true,
   ...props
 }: PopoverProps) => {
   const anchorRef = useRef<React.ComponentRef<View>>(null!);
@@ -55,6 +60,7 @@ export const Popover = ({
   const keyboardHeightRef = useRef(0);
   const prevIsOpenRef = useRef(false);
   const prevVisible = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [isOpen, setIsOpen] = useState(visible);
   const [menuLayout, setMenuLayout] = useState<LayoutRectangle>(defaultLayout);
@@ -64,6 +70,32 @@ export const Popover = ({
     ...defaultLayout,
     ...Dimensions.get('window'),
   }));
+
+  const addEventListeners = useCallback(() => {
+    abortControllerRef.current = new AbortController();
+
+    const backPressListener = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => visible && !!onDismiss?.()
+    );
+    const dimensionsChangeListener = Dimensions.addEventListener(
+      'change',
+      () => visible && !!onDismiss?.()
+    );
+
+    abortControllerRef.current.signal.addEventListener('abort', () => {
+      backPressListener.remove();
+      dimensionsChangeListener.remove();
+    });
+
+    if (Platform.OS === 'web') {
+      document.addEventListener(
+        'keyup',
+        (e) => e.key === 'Escape' && onDismiss?.(),
+        { signal: abortControllerRef.current.signal }
+      );
+    }
+  }, [onDismiss, visible]);
 
   const open = useCallback(async () => {
     const [windowLayoutResult, menuLayoutResult, anchorLayoutResult] =
@@ -95,37 +127,36 @@ export const Popover = ({
       ...windowLayoutResult,
       height: windowLayoutResult.height - keyboardHeightRef.current,
     });
-    Animated.timing(opacityRef.current, {
-      toValue: 1,
-      duration: animationDuration,
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (finished) {
-        prevIsOpenRef.current = true;
+
+    addEventListeners();
+    Animated.timing(opacityRef.current, enterAnimation).start(
+      ({ finished }) => {
+        if (finished) {
+          prevIsOpenRef.current = true;
+        }
       }
-    });
+    );
 
-    onShow?.(null!);
-  }, [animationDuration, onShow]);
+    onShow?.();
+  }, [addEventListeners, enterAnimation, onShow]);
 
-  const close = useCallback(
-    (e?: NativeSyntheticEvent<any>) => {
-      Animated.timing(opacityRef.current, {
-        toValue: 0,
-        duration: animationDuration,
-        useNativeDriver: true,
-      }).start(({ finished }) => {
+  const close = useCallback(() => {
+    abortControllerRef.current?.abort();
+
+    Animated.timing(opacityRef.current, leaveAnimation).start(
+      ({ finished }) => {
         if (finished) {
           setIsOpen(false);
           prevIsOpenRef.current = false;
           setMenuLayout(defaultLayout);
         }
-      });
+      }
+    );
 
-      onRequestClose?.(e!);
-    },
-    [animationDuration, onRequestClose]
-  );
+    abortControllerRef.current = null;
+
+    onDismiss?.();
+  }, [leaveAnimation, onDismiss]);
 
   const updateVisibility = useCallback(
     (isVisible: boolean) => {
@@ -139,7 +170,7 @@ export const Popover = ({
           close();
           return;
         }
-      });
+      }, 100);
     },
     [open, close]
   );
@@ -233,9 +264,8 @@ export const Popover = ({
     windowLayout.height,
   ]);
 
-  const ContentWrapper = menuScrollHeight ? ScrollView : Fragment;
-
   useEffect(() => {
+    const opacityAnimation = opacityRef.current;
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       (e) => (keyboardHeightRef.current = e.endCoordinates.height)
@@ -246,6 +276,8 @@ export const Popover = ({
     );
 
     return () => {
+      abortControllerRef.current?.abort();
+      opacityAnimation.removeAllListeners();
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
@@ -263,6 +295,8 @@ export const Popover = ({
     updateVisibility(visible);
   }, [updateVisibility, visible]);
 
+  const ContentWrapper = menuScrollHeight ? ScrollView : Fragment;
+
   return (
     <View
       ref={anchorRef}
@@ -271,13 +305,7 @@ export const Popover = ({
     >
       {anchor}
 
-      <Modal
-        {...props}
-        animationType="none"
-        visible={isOpen}
-        onRequestClose={close}
-        onDismiss={close}
-      >
+      <Modal {...props} transparent={transparent} visible={isOpen}>
         <Pressable style={[styles.overlay, overlayStyle]} onPress={close}>
           <Animated.View
             ref={menuRef}
@@ -319,6 +347,18 @@ const defaultLayout = {
   height: 0,
 } as const;
 
+const defaultEnterAnimation = {
+  toValue: 1,
+  duration: 150,
+  useNativeDriver: true,
+} as const;
+
+const defaultLeaveAnimation = {
+  toValue: 0,
+  duration: 150,
+  useNativeDriver: true,
+} as const;
+
 const measureInWindow = <T extends React.ComponentRef<View>>({
   current,
 }: React.RefObject<T | null>): Promise<LayoutRectangle> =>
@@ -333,14 +373,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
   },
   containerStyle: {
     position: 'absolute',
-    backgroundColor: '#ffffff',
-    shadowColor: '#ccced1',
-    shadowRadius: 5,
-    elevation: 5,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

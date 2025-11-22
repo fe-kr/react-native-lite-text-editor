@@ -32,7 +32,7 @@ export type Action<
 };
 
 export type ActionCreator<P, M extends ActionMeta = ActionMeta> = (
-  payload?: P,
+  payload: P,
   meta?: M
 ) => Action<P, M>;
 

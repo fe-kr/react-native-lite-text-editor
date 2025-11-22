@@ -5,14 +5,13 @@ import { ToolbarItem, type ToolbarItemProps } from './toolbar-item';
 import { StyleSheet } from 'react-native';
 import { useStyle } from './model/style-context';
 
-export interface ToolbarAccordionProps extends Partial<PopoverProps> {
-  type: ToolbarItemProps['type'];
-  name?: string;
-  value?: string;
-}
+export interface ToolbarAccordionProps
+  extends Partial<PopoverProps>,
+    Pick<ToolbarItemProps, 'type' | 'name' | 'value' | 'title'> {}
 
 export const ToolbarAccordion = ({
   type,
+  title,
   name,
   value,
   style,
@@ -40,10 +39,11 @@ export const ToolbarAccordion = ({
       {...popoverProps}
       {...props}
       visible={isOpen}
-      onRequestClose={onClose}
+      onDismiss={onClose}
       containerStyle={[popoverProps?.containerStyle, containerStyle]}
       anchor={
         <ToolbarItem
+          title={title}
           name={name}
           value={value}
           type={type}

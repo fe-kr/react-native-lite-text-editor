@@ -16,4 +16,9 @@ export {
 
 export * as actions from './config/actions';
 export { DocumentCommandId, EditorEvent } from './config/enum';
-export type { CommandsInfo, ExtendedWebView, DocumentCommand } from './types';
+export type {
+  CommandsInfo,
+  ExtendedWebView,
+  HTMLElementTag,
+  DocumentCommand,
+} from './types';

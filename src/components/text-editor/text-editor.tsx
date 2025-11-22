@@ -276,7 +276,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     useEffect(() => {
       if (!isReady()) return;
 
-      dispatch(insertStyle(styles));
+      dispatch(insertStyle(styles!));
     }, [dispatch, isReady, styles]);
 
     useEffect(() => {

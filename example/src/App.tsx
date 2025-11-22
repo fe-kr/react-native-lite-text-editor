@@ -4,6 +4,7 @@ import {
   SafeAreaView,
   View,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import {
   TextEditor,
@@ -12,9 +13,9 @@ import {
   type CommandsInfo,
   type ExtendedWebView,
 } from 'react-native-lite-text-editor';
-import { dropdownIconProps, fontKey, toolbarConfig } from './config';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { useFonts } from 'expo-font';
+import { createConfig } from './config/toolbar';
 
 export default function App() {
   const editorRef = useRef<ExtendedWebView>(null!);
@@ -45,8 +46,10 @@ export default function App() {
 
       <Toolbar
         horizontal
-        Icon={MaterialIcons as ToolbarProps['Icon']}
+        Icon={Icon}
         dropdownIconProps={dropdownIconProps}
+        popoverProps={popoverProps}
+        tooltipProps={tooltipProps}
         editorRef={editorRef}
         data={state}
         config={toolbarConfig}
@@ -58,6 +61,14 @@ export default function App() {
 }
 
 const Separator = () => <View style={styles.separator} />;
+const Icon = MaterialIcons as ToolbarProps['Icon'];
+
+const toolbarConfig = createConfig();
+
+const fontKey = Platform.select({
+  web: 'MaterialIcons-Regular',
+  default: 'MaterialIcons',
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -78,4 +89,32 @@ const styles = StyleSheet.create({
     maxHeight: 56,
     backgroundColor: '#eee',
   },
+  dropdownIcon: {
+    marginLeft: 4,
+  },
+  tooltip: {
+    borderWidth: 1,
+    padding: 4,
+    borderRadius: 4,
+    backgroundColor: '#ffffff',
+  },
+  popoverContainer: {
+    backgroundColor: '#ffffff',
+    shadowColor: '#ccced1',
+    shadowRadius: 5,
+    elevation: 5,
+  },
 });
+
+const dropdownIconProps: ToolbarProps['dropdownIconProps'] = {
+  name: 'arrow-drop-down',
+  style: styles.dropdownIcon,
+};
+
+const popoverProps: ToolbarProps['popoverProps'] = {
+  containerStyle: styles.popoverContainer,
+};
+
+const tooltipProps: ToolbarProps['tooltipProps'] = {
+  style: styles.tooltip,
+};

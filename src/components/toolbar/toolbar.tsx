@@ -32,6 +32,7 @@ const Toolbar = <T extends CommandsInfo>({
   Icon = DefaultIcon,
   Popover = DefaultPopover,
   popoverProps,
+  tooltipProps,
   ...props
 }: ToolbarProps<T>) => {
   const { dispatch = noop, focus = noop } = editorRef?.current ?? {};
@@ -45,6 +46,7 @@ const Toolbar = <T extends CommandsInfo>({
       activeTintColor,
       iconSize,
       popoverProps,
+      tooltipProps,
     }),
     [
       dropdownIconProps,
@@ -52,6 +54,7 @@ const Toolbar = <T extends CommandsInfo>({
       Popover,
       activeTintColor,
       iconSize,
+      tooltipProps,
       popoverProps,
       tintColor,
     ]

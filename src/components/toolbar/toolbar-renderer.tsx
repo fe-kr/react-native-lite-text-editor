@@ -1,4 +1,4 @@
-import { Platform, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useToolbar } from './model/toolbar-context';
 import type { Action, CommandsInfo } from '../../types';
 import { ToolbarAccordion } from './toolbar-accordion';
@@ -15,7 +15,7 @@ export interface ContainerToolbarItem {
   id?: string;
   type: 'container';
   items: (DefaultToolbarItem | CustomToolbarItem | NestedToolbarItem)[];
-  containerStyle: ToolbarItemProps['containerStyle'];
+  containerStyle?: ToolbarItemProps['containerStyle'];
   onClose?: () => void;
 }
 
@@ -50,7 +50,7 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
     const { items, containerStyle, onClose } = props;
 
     return (
-      <View style={containerStyle}>
+      <View style={[styles.rowContainer, containerStyle]}>
         {items?.map((item, i) => (
           <ToolbarRenderer onClose={onClose} {...item} key={i} />
         ))}
@@ -79,7 +79,6 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
     return (
       <ToolbarAccordion
         {...restProps}
-        transparent
         type={type}
         name={name ?? selectedOption?.name}
         value={value ?? selectedOption?.value}
@@ -97,18 +96,25 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
     );
   }
 
-  const { action, onClose, ...restProps } = props;
-  const { enabled } = data && action ? data[action.type] ?? {} : {};
-  const showKeyboard = Platform.OS === 'web' || action?.meta?.showKeyboard;
+  const { action, onClose, onPress, ...restProps } = props;
 
   return (
     <ToolbarItem
       {...restProps}
-      disabled={restProps.disabled ?? (isBoolean(enabled) && !enabled)}
+      disabled={restProps.disabled ?? !getIsEnabledAction(data, action)}
       selected={restProps.selected ?? getIsActiveAction(data, action)}
-      onPressIn={showKeyboard ? focus : restProps.onPressIn}
       onPressOut={onClose ?? restProps.onPressOut}
-      onPress={action ? () => dispatch(action) : restProps.onPress}
+      onPress={(e) => {
+        if (action?.meta?.showKeyboard ?? Platform.OS === 'web') {
+          focus();
+        }
+
+        if (action) {
+          dispatch(action);
+        }
+
+        onPress?.(e);
+      }}
     />
   );
 };
@@ -140,3 +146,15 @@ const getIsActiveAction = (data?: CommandsInfo, action?: Action) => {
 
   return isBoolean(state) ? state : state === action.payload;
 };
+
+const getIsEnabledAction = (data?: CommandsInfo, action?: Action) => {
+  const { enabled } = data && action ? data[action.type] ?? {} : {};
+
+  return isBoolean(enabled) && enabled;
+};
+
+const styles = StyleSheet.create({
+  rowContainer: {
+    flexDirection: 'row',
+  },
+});
