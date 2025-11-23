@@ -1790,6 +1790,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@emotion/unitless@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@emotion/unitless@npm:0.10.0"
+  checksum: 10c0/150943192727b7650eb9a6851a98034ddb58a8b6958b37546080f794696141c3760966ac695ab9af97efe10178690987aee4791f9f0ad1ff76783cdca83c1d49
+  languageName: node
+  linkType: hard
+
 "@esbuild/aix-ppc64@npm:0.25.12":
   version: 0.25.12
   resolution: "@esbuild/aix-ppc64@npm:0.25.12"
@@ -11718,6 +11725,7 @@ __metadata:
     react-native-monorepo-config: "npm:^0.1.9"
     react-native-web: "npm:~0.21.0"
     react-native-webview: "npm:^13.16.0"
+    react-style-stringify: "npm:^1.2.0"
   languageName: unknown
   linkType: soft
 
@@ -11853,6 +11861,15 @@ __metadata:
   version: 0.14.2
   resolution: "react-refresh@npm:0.14.2"
   checksum: 10c0/875b72ef56b147a131e33f2abd6ec059d1989854b3ff438898e4f9310bfcc73acff709445b7ba843318a953cb9424bcc2c05af2b3d80011cee28f25aef3e2ebb
+  languageName: node
+  linkType: hard
+
+"react-style-stringify@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "react-style-stringify@npm:1.2.0"
+  dependencies:
+    "@emotion/unitless": "npm:^0.10.0"
+  checksum: 10c0/34a595004b8ea2f98f4a812eee630978beaff1e45f8598a242bc7a8081dbcc7cca1d0cf1ca135632070f6fb97920a0c4036504c7143e7be2244281f1efd72def
   languageName: node
   linkType: hard
 

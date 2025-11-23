@@ -43,6 +43,7 @@ export const fontSizeOptions: Option[] = [
 ] as const;
 
 export const fontNameOptions: Option[] = [
+  { name: 'Lato', value: 'Lato, sans-serif' },
   { name: 'Arial', value: 'Arial, sans-serif' },
   { name: 'Times New Roman', value: '"Times New Roman", serif' },
 ] as const;

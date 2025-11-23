@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   StyleSheet,
-  SafeAreaView,
   View,
   ActivityIndicator,
   Platform,
+  Linking,
 } from 'react-native';
 import {
   TextEditor,
@@ -12,14 +12,34 @@ import {
   type ToolbarProps,
   type CommandsInfo,
   type ExtendedWebView,
+  type Event,
+  type EventData,
 } from 'react-native-lite-text-editor';
 import { MaterialIcons } from '@react-native-vector-icons/material-icons';
 import { useFonts } from 'expo-font';
+import { defaultStyles } from './config/styles';
+import { content } from './config/content';
 import { createConfig } from './config/toolbar';
+import { injectedJsBeforeContentLoaded } from './config/scripts';
+import { logger } from './utils/logger';
 
 export default function App() {
   const editorRef = useRef<ExtendedWebView>(null!);
   const [state, setState] = useState<CommandsInfo>(null!);
+
+  const onSelectionChange = useCallback((e: Event<EventData['select']>) => {
+    logger(e);
+
+    setState(e.nativeEvent.data);
+  }, []);
+
+  const onElementPress = useCallback((e: Event<EventData['press']>) => {
+    logger(e);
+
+    if (e.nativeEvent.tagName === 'A' && e.nativeEvent.href) {
+      Linking.openURL(e.nativeEvent.href);
+    }
+  }, []);
 
   const [isLoading] = useFonts({
     [fontKey]: require('@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf'),
@@ -34,14 +54,25 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.wrapper}>
       <TextEditor
         initialSelect
+        autoFocus
         ref={editorRef}
         containerStyle={styles.container}
-        onSelectionChange={(e) => setState(e.nativeEvent.data)}
         placeholder="Type text here..."
-        content="<b>Hello World</b>"
+        // extraCommands={extraCommands} // TODO: fix focus issue
+        defaultStyles={defaultStyles}
+        onSelectionChange={onSelectionChange}
+        onPress={onElementPress}
+        injectedJavaScriptBeforeContentLoaded={injectedJsBeforeContentLoaded}
+        onPaste={logger}
+        onBlur={logger}
+        onKeyDown={logger}
+        onKeyUp={logger}
+        onFocus={logger}
+        onChange={logger}
+        content={content}
       />
 
       <Toolbar
@@ -56,7 +87,7 @@ export default function App() {
         style={styles.toolbar}
         ItemSeparatorComponent={Separator}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -71,6 +102,10 @@ const fontKey = Platform.select({
 });
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    padding: 16,
+  },
   container: {
     flex: 1,
   },
@@ -80,14 +115,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   separator: {
-    width: StyleSheet.hairlineWidth,
+    width: 1,
     backgroundColor: '#ccced1',
-    margin: 4,
+    margin: 8,
   },
   toolbar: {
-    padding: 8,
-    maxHeight: 56,
-    backgroundColor: '#eee',
+    paddingHorizontal: 16,
+    height: '100%',
+    maxHeight: 48,
+    borderColor: '#ccced1',
+    borderWidth: 1,
+    borderTopWidth: 0,
   },
   dropdownIcon: {
     marginLeft: 4,

@@ -1,8 +1,11 @@
 import {
   actions,
   DocumentCommandId,
+  ToolbarForm,
+  withToolbar,
   type HTMLElementTag,
   type ToolbarRenderItem,
+  type CustomToolbarItem,
 } from 'react-native-lite-text-editor';
 import {
   type Option,
@@ -12,6 +15,7 @@ import {
   headingOptions,
 } from './options';
 import { StyleSheet } from 'react-native';
+import { createElement } from 'react';
 
 const fields = {
   undo: {
@@ -120,13 +124,6 @@ const fields = {
     value: 'format-quote',
     action: actions.formatBlock('blockquote'),
   },
-  code: {
-    id: `${DocumentCommandId.FORMAT_BLOCK}.code`,
-    type: 'icon',
-    title: 'Code',
-    value: 'code',
-    action: actions.formatBlock('code'),
-  },
   insertHorizontalRule: {
     id: DocumentCommandId.INSERT_HORIZONTAL_RULE,
     type: 'icon',
@@ -190,6 +187,53 @@ const fields = {
     value: 'format-align-justify',
     action: actions.justifyFull,
   },
+  insertCheckboxList: {
+    id: `${DocumentCommandId.FORMAT_BLOCK}.insertCheckboxList`,
+    type: 'icon',
+    value: 'checklist',
+    action: {
+      type: 'insertCheckboxList',
+      meta: { focusable: true, selectable: true },
+    },
+  },
+  code: {
+    id: `${DocumentCommandId.FORMAT_BLOCK}.code`,
+    type: 'icon',
+    title: 'Code',
+    value: 'code',
+    action: {
+      type: 'insertCode',
+      meta: { focusable: true, selectable: true },
+    },
+  },
+  createLink: {
+    id: DocumentCommandId.CREATE_LINK,
+    type: 'custom',
+    Component: withToolbar<CustomToolbarItem>(({ dispatch, onClose }) =>
+      createElement(ToolbarForm, {
+        iconName: 'check',
+        placeholder: 'Type link href...',
+        onSubmit: (value) => {
+          dispatch(actions.createLink(value));
+          onClose?.();
+        },
+      })
+    ),
+  },
+  insertImage: {
+    id: DocumentCommandId.INSERT_IMAGE,
+    type: 'custom',
+    Component: withToolbar<CustomToolbarItem>(({ dispatch, onClose }) =>
+      createElement(ToolbarForm, {
+        iconName: 'check',
+        placeholder: 'Type image URL...',
+        onSubmit: (value) => {
+          dispatch(actions.insertImage(value));
+          onClose?.();
+        },
+      })
+    ),
+  },
 } as const;
 
 export const createConfig = (): ToolbarRenderItem[] => [
@@ -207,19 +251,12 @@ export const createConfig = (): ToolbarRenderItem[] => [
   {
     type: 'container',
     items: [
-      {
-        type: 'icon',
-        title: 'Basic styles',
-        value: 'title',
-        items: [
-          fields.bold,
-          fields.italic,
-          fields.underline,
-          fields.strikeThrough,
-          fields.subscript,
-          fields.superscript,
-        ],
-      },
+      fields.bold,
+      fields.italic,
+      fields.underline,
+      fields.strikeThrough,
+      fields.subscript,
+      fields.superscript,
       fields.removeFormat,
     ],
   },
@@ -261,7 +298,11 @@ export const createConfig = (): ToolbarRenderItem[] => [
   },
   {
     type: 'container',
-    items: [fields.insertOrderedList, fields.insertUnorderedList],
+    items: [
+      fields.insertOrderedList,
+      fields.insertUnorderedList,
+      fields.insertCheckboxList,
+    ],
   },
   {
     type: 'container',
@@ -271,6 +312,7 @@ export const createConfig = (): ToolbarRenderItem[] => [
       {
         type: 'icon',
         title: 'Text alignment',
+        closeable: true,
         defaultValue: fields.justifyLeft.value,
         items: [
           fields.justifyLeft,
@@ -278,6 +320,23 @@ export const createConfig = (): ToolbarRenderItem[] => [
           fields.justifyRight,
           fields.justifyFull,
         ],
+      },
+    ],
+  },
+  {
+    type: 'container',
+    items: [
+      {
+        type: 'icon',
+        value: 'link',
+        closeable: true,
+        items: [fields.createLink],
+      },
+      {
+        type: 'icon',
+        value: 'insert-photo',
+        closeable: true,
+        items: [fields.insertImage],
       },
     ],
   },
