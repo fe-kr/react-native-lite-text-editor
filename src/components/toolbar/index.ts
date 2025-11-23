@@ -5,6 +5,10 @@ export {
   ToolbarAccordion,
   type ToolbarAccordionProps,
 } from './toolbar-accordion';
-export { ToolbarRenderer, type ToolbarRenderItem } from './toolbar-renderer';
-export { useToolbar } from './model/toolbar-context';
+export {
+  ToolbarRenderer,
+  type ToolbarRenderItem,
+  type CustomToolbarItem,
+} from './toolbar-renderer';
+export { useToolbar, withToolbar } from './model/toolbar-context';
 export { useStyle } from './model/style-context';

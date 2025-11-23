@@ -24,6 +24,7 @@ import {
   Modal,
   type ModalProps,
 } from 'react-native';
+import type { Callback } from '../../../types';
 
 export interface PopoverProps extends ModalProps {
   anchor: React.ReactNode;
@@ -31,8 +32,8 @@ export interface PopoverProps extends ModalProps {
   anchorPosition?: 'top' | 'bottom';
   enterAnimation?: Animated.TimingAnimationConfig;
   leaveAnimation?: Animated.TimingAnimationConfig;
-  onShow?: () => void;
-  onDismiss?: () => void;
+  onShow?: Callback;
+  onDismiss?: Callback;
   wrapperStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   overlayStyle?: StyleProp<ViewStyle>;

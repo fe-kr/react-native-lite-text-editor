@@ -8,3 +8,11 @@ interface ToolbarParams extends Pick<ExtendedWebView, 'focus' | 'dispatch'> {
 export const ToolbarContext = createContext<ToolbarParams>(null!);
 
 export const useToolbar = () => useContext(ToolbarContext);
+
+export const withToolbar =
+  <T extends object>(Component: React.ComponentType<T & ToolbarParams>) =>
+  (props: T) => {
+    const toolbarData = useToolbar();
+
+    return <Component {...props} {...toolbarData} />;
+  };

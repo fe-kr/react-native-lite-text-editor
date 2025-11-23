@@ -4,10 +4,13 @@ import { type IconProps } from './ui/icon';
 import { ToolbarItem, type ToolbarItemProps } from './toolbar-item';
 import { StyleSheet } from 'react-native';
 import { useStyle } from './model/style-context';
+import type { Callback } from '../../types';
 
 export interface ToolbarAccordionProps
-  extends Partial<PopoverProps>,
-    Pick<ToolbarItemProps, 'type' | 'name' | 'value' | 'title'> {}
+  extends Omit<Partial<PopoverProps>, 'children'>,
+    Pick<ToolbarItemProps, 'type' | 'name' | 'value' | 'title'> {
+  children: (params: { open: Callback; close: Callback }) => React.ReactNode;
+}
 
 export const ToolbarAccordion = ({
   type,
@@ -30,16 +33,16 @@ export const ToolbarAccordion = ({
     popoverProps,
   } = useStyle();
 
-  const onClose = useCallback(() => setIsOpen(false), []);
+  const close = useCallback(() => setIsOpen(false), []);
 
-  const onOpen = useCallback(() => setIsOpen(true), []);
+  const open = useCallback(() => setIsOpen(true), []);
 
   return (
     <Popover
       {...popoverProps}
       {...props}
       visible={isOpen}
-      onDismiss={onClose}
+      onDismiss={close}
       containerStyle={[popoverProps?.containerStyle, containerStyle]}
       anchor={
         <ToolbarItem
@@ -50,7 +53,7 @@ export const ToolbarAccordion = ({
           selected={isOpen}
           style={style}
           containerStyle={styles.row}
-          onPress={onOpen}
+          onPress={open}
         >
           <Icon
             {...(dropdownIconProps ?? ({} as IconProps))}
@@ -60,7 +63,7 @@ export const ToolbarAccordion = ({
         </ToolbarItem>
       }
     >
-      {children}
+      {children({ open, close })}
     </Popover>
   );
 };

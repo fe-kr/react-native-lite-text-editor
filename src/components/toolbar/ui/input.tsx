@@ -4,11 +4,14 @@ import {
   StyleSheet,
   type TextInputProps,
   type ViewStyle,
+  type StyleProp,
 } from 'react-native';
 import { useState } from 'react';
 
-interface InputProps extends TextInputProps {
-  inputStyle?: ViewStyle | ((state: InputState) => ViewStyle);
+export interface InputProps extends TextInputProps {
+  inputStyle?:
+    | StyleProp<ViewStyle>
+    | ((state: InputState) => StyleProp<ViewStyle>);
   renderLeft?: (state: InputState) => React.ReactNode;
   renderRight?: (state: InputState) => React.ReactNode;
 }
@@ -26,6 +29,9 @@ export const Input = ({
 }: InputProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
+  const containerStyle =
+    typeof inputStyle === 'function' ? inputStyle({ isFocused }) : inputStyle;
+
   const onInputBlur: TextInputProps['onBlur'] = (e) => {
     setIsFocused(false);
     onBlur?.(e);
@@ -37,14 +43,7 @@ export const Input = ({
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        typeof inputStyle === 'function'
-          ? inputStyle({ isFocused })
-          : inputStyle,
-      ]}
-    >
+    <View style={[styles.container, containerStyle]}>
       {renderLeft?.({ isFocused })}
 
       <TextInput

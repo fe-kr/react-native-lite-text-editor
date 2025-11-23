@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, View } from 'react-native';
 import { useToolbar } from './model/toolbar-context';
-import type { Action, CommandsInfo } from '../../types';
+import type { Action, Callback, CommandsInfo } from '../../types';
 import { ToolbarAccordion } from './toolbar-accordion';
 import { ToolbarItem, type ToolbarItemProps } from './toolbar-item';
 
@@ -8,7 +8,7 @@ export interface CustomToolbarItem {
   id?: string;
   type: 'custom';
   Component?: React.ComponentType<any>;
-  onClose?: () => void;
+  onClose?: Callback;
 }
 
 export interface ContainerToolbarItem {
@@ -16,12 +16,12 @@ export interface ContainerToolbarItem {
   type: 'container';
   items: (DefaultToolbarItem | CustomToolbarItem | NestedToolbarItem)[];
   containerStyle?: ToolbarItemProps['containerStyle'];
-  onClose?: () => void;
+  onClose?: Callback;
 }
 
 export interface DefaultToolbarItem extends ToolbarItemProps {
   action?: Action;
-  onClose?: () => void;
+  onClose?: Callback;
 }
 
 export interface NestedToolbarItem extends ToolbarItemProps {
@@ -84,14 +84,16 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
         value={value ?? selectedOption?.value}
         onShow={Platform.OS === 'web' ? focus : undefined}
       >
-        {items.map((item, index) => (
-          <ToolbarRenderer
-            {...item}
-            {...(selectable && { selected: item.id === selectedOption?.id })}
-            onClose={closeable ? close : undefined}
-            key={item.id ?? index}
-          />
-        ))}
+        {({ close }) =>
+          items.map((item, index) => (
+            <ToolbarRenderer
+              {...item}
+              {...(selectable && { selected: item.id === selectedOption?.id })}
+              onClose={closeable ? close : undefined}
+              key={item.id ?? index}
+            />
+          ))
+        }
       </ToolbarAccordion>
     );
   }
@@ -103,7 +105,6 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
       {...restProps}
       disabled={restProps.disabled ?? !getIsEnabledAction(data, action)}
       selected={restProps.selected ?? getIsActiveAction(data, action)}
-      onPressOut={onClose ?? restProps.onPressOut}
       onPress={(e) => {
         if (action?.meta?.showKeyboard ?? Platform.OS === 'web') {
           focus();
@@ -114,6 +115,7 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
         }
 
         onPress?.(e);
+        onClose?.();
       }}
     />
   );

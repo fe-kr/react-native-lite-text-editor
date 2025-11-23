@@ -35,7 +35,8 @@ import type {
 } from 'react-native-webview';
 import { createEvent, isActionLike } from './text-editor.lib';
 
-export interface TextEditorProps extends WebViewProps {
+export interface TextEditorProps
+  extends Omit<WebViewProps, 'onBlur' | 'onFocus'> {
   autoCapitalize?: TextInputProps['autoCapitalize'];
   autoCorrect?: 'on' | 'off';
   autoFocus?: boolean;
@@ -48,8 +49,8 @@ export interface TextEditorProps extends WebViewProps {
   extraCommands?: DocumentCommandConstructor[];
   styles?: string;
   defaultStyles?: string;
-  onEditorBlur?: (e: Event<EventData['blur']>) => void;
-  onEditorFocus?: (e: Event<EventData['focus']>) => void;
+  onBlur?: (e: Event<EventData['blur']>) => void;
+  onFocus?: (e: Event<EventData['focus']>) => void;
   onChange?: (e: Event<EventData['change']>) => void;
   onInput?: (e: Event<EventData['input']>) => void;
   onPress?: (e: Event<EventData['press']>) => void;
@@ -74,9 +75,9 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       defaultStyles,
       styles,
       onSelectionChange,
-      onEditorBlur: onBlur,
+      onBlur,
       onChange,
-      onEditorFocus: onFocus,
+      onFocus,
       onKeyDown,
       onKeyUp,
       onPaste,
@@ -125,7 +126,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
           [EditorEvent.FOCUS]: !!onFocus,
           [EditorEvent.INPUT]: !!onInput,
           [EditorEvent.KEY_DOWN]: !!onKeyDown,
-          [EditorEvent.KEY_UP]: !onKeyUp,
+          [EditorEvent.KEY_UP]: !!onKeyUp,
           [EditorEvent.PASTE]: !!onPaste,
           [EditorEvent.PRESS]: !!onPress,
           [EditorEvent.SELECT]: !!onSelectionChange,

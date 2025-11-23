@@ -10,9 +10,10 @@ export type DocumentCommandId = ValueOf<typeof DocumentCommandId>;
 export type HTMLElementTag = keyof HTMLElementTagNameMap;
 export type EditorEvent = ValueOf<typeof EditorEvent>;
 export type ValueOf<T extends object> = T[keyof T];
+export type Callback = () => void;
 
 export interface ExtendedWebView extends WebView {
-  focus: () => void;
+  focus: Callback;
   dispatch: (action: Action) => void;
 }
 

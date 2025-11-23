@@ -1,19 +1,14 @@
 import { useState } from 'react';
-import {
-  Pressable,
-  type StyleProp,
-  type TextInputProps,
-  type ViewStyle,
-} from 'react-native';
-import { Input } from './ui/input';
+import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
+import { Input, type InputProps } from './ui/input';
 import { Button } from './ui/button';
 import type { Action } from '../../types';
 import { useStyle } from './model/style-context';
 
-export interface ToolbarFormProps extends TextInputProps {
+export interface ToolbarFormProps extends InputProps {
   iconName?: string;
   action?: (value: string) => Action;
-  pattern?: RegExp;
+  inputStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   onSubmit: (value: string) => void;
 }
@@ -22,13 +17,15 @@ export const ToolbarForm = ({
   defaultValue,
   iconName,
   containerStyle,
-  pattern,
   onSubmit,
+  inputStyle,
   ...props
 }: ToolbarFormProps) => {
   const { Icon, iconSize, tintColor, activeTintColor } = useStyle();
 
   const [value, setValue] = useState(defaultValue ?? '');
+
+  const onValueSubmit = () => onSubmit(value);
 
   return (
     <Pressable style={containerStyle}>
@@ -36,14 +33,16 @@ export const ToolbarForm = ({
         {...props}
         value={value}
         onChangeText={setValue}
-        inputStyle={({ isFocused }) => ({
-          borderColor: isFocused ? activeTintColor : tintColor,
-        })}
+        inputStyle={({ isFocused }) => [
+          {
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderColor: isFocused ? activeTintColor : tintColor,
+          },
+          inputStyle,
+        ]}
         renderRight={({ isFocused }) => (
-          <Button
-            onPress={() => onSubmit(value)}
-            disabled={pattern ? !pattern.test(value) : !value}
-          >
+          <Button onPress={onValueSubmit} disabled={!value}>
             <Icon
               name={iconName!}
               size={iconSize}

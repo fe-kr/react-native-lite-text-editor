@@ -10,15 +10,12 @@ export {
   ToolbarAccordion,
   type ToolbarAccordionProps,
   useToolbar,
+  withToolbar,
   type ToolbarRenderItem,
+  type CustomToolbarItem,
   useStyle,
 } from './components/toolbar';
 
 export * as actions from './config/actions';
 export { DocumentCommandId, EditorEvent } from './config/enum';
-export type {
-  CommandsInfo,
-  ExtendedWebView,
-  HTMLElementTag,
-  DocumentCommand,
-} from './types';
+export * from './types';

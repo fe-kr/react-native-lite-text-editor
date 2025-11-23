@@ -30,7 +30,6 @@ export default class EditorModule {
       [EditorEvent.PASTE]: ['paste', this.onPaste],
       [EditorEvent.INPUT]: ['input', this.onInput],
       [EditorEvent.PRESS]: ['click', this.onPress],
-      [EditorEvent.CHANGE]: ['change', this.onChange],
       [EditorEvent.KEY_UP]: ['keyup', this.onKeyUp],
       [EditorEvent.KEY_DOWN]: ['keydown', this.onKeyDown],
     } as const).forEach(([key, args]) => {
@@ -53,6 +52,7 @@ export default class EditorModule {
 
     this.view.addEventListener('input', () => {
       if (this.view.innerHTML === '<br>') this.view.innerHTML = '';
+      if (options?.listeners[EditorEvent.CHANGE]) this.onChange();
     });
 
     (options?.platform === 'android' ? document : window).addEventListener(
@@ -89,8 +89,6 @@ export default class EditorModule {
 
   onInput = (_e: Event) => {
     const { inputType, data } = _e as InputEvent;
-
-    this.onChange();
 
     this.postMessage(EditorEvent.INPUT, { inputType, data });
   };
