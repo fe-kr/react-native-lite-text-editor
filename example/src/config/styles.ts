@@ -1,8 +1,16 @@
 import { StyleSheet } from 'react-native';
 import { stringifyStyleMap } from 'react-style-stringify';
+import base64 from '../../generated/fonts/base64';
 
 export const defaultStyles = stringifyStyleMap(
   StyleSheet.create({
+    '@font-face': {
+      fontFamily: 'Lato',
+      src: `url(data:font/truetype;charset=utf-8;base64,${base64})format('truetype')`,
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      fontDisplay: 'swap',
+    } as object,
     '.rnlte-root': {
       borderWidth: 1,
       borderColor: '#ccced1',

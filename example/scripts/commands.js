@@ -1,9 +1,9 @@
 import { transpileModule, ModuleKind } from 'typescript';
 import { readdirSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { join, resolve } from 'node:path';
 
-const inputPath = 'src/commands';
-const outputPath = inputPath + '-js';
+const inputPath = resolve(resolve(), './src/commands');
+const outputPath = resolve(resolve(), './generated/commands');
 const indexRegExp = /^index\.ts$/;
 const defaults = 'export default ';
 const compilerOptions = {
@@ -16,7 +16,7 @@ mkdirSync(outputPath, { recursive: true });
 readdirSync(inputPath).forEach((file) => {
   const tsSourceCode = readFileSync(join(inputPath, file), 'utf8');
   const result = transpileModule(tsSourceCode, { compilerOptions });
-  const outputFile = join(outputPath, basename(file, '.ts') + '.js');
+  const outputFile = join(outputPath, file);
   let outputText = result.outputText;
 
   if (!indexRegExp.test(file)) {

@@ -1,3 +1,5 @@
+import { StyleSheet } from 'react-native';
+import { createElement } from 'react';
 import {
   actions,
   DocumentCommandId,
@@ -14,8 +16,6 @@ import {
   fontSizeOptions,
   headingOptions,
 } from './options';
-import { StyleSheet } from 'react-native';
-import { createElement } from 'react';
 
 const fields = {
   undo: {
