@@ -1,6 +1,6 @@
 import { type DocumentCommand } from 'react-native-lite-text-editor';
 
-export class InsertCheckboxList implements DocumentCommand {
+export default class InsertCheckboxList implements DocumentCommand {
   readonly id = 'insertCheckboxList';
   readonly className = 'rnlte-checkbox';
 
@@ -44,7 +44,7 @@ export class InsertCheckboxList implements DocumentCommand {
     const input = document.createElement('input');
 
     input.setAttribute('type', 'checkbox');
-    input.setAttribute('class', `${this.className}-input`);
+    input.setAttribute('class', this.className + '-input');
 
     const item = document.createElement('dt');
 

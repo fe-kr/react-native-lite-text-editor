@@ -4,7 +4,6 @@ import { SetAttribute } from './commands/set-attribute';
 import type {
   CommandsInfo,
   DocumentCommand,
-  DocumentCommandConstructor,
   EditorTransferObject,
   HTMLElementInfo,
 } from '../../types';
@@ -23,14 +22,9 @@ export class EditorService {
 
   setCommands() {
     const commands = Object.values(BaseCommands);
+    const { extraCommands } = window.RNLTE ?? {};
 
-    const extraCommands =
-      this.options?.extraCommands.map<DocumentCommandConstructor>(
-        // eslint-disable-next-line no-new-func
-        (str) => new Function(`return ${str}`)()
-      ) ?? [];
-
-    [...commands, ...extraCommands, InsertStyle, SetAttribute].forEach(
+    [...commands, InsertStyle, SetAttribute, ...extraCommands].forEach(
       (Command) => {
         const command = new Command(this.view);
 

@@ -1,10 +1,6 @@
-import type WebView from 'react-native-webview';
+import type { WebView } from 'react-native-webview';
 import type { DocumentCommandId, EditorEvent } from './config/enum';
-import type {
-  LayoutRectangle,
-  NativeSyntheticEvent,
-  PlatformOSType,
-} from 'react-native';
+import type { LayoutRectangle, NativeSyntheticEvent } from 'react-native';
 
 export type DocumentCommandId = ValueOf<typeof DocumentCommandId>;
 export type HTMLElementTag = keyof HTMLElementTagNameMap;
@@ -58,6 +54,7 @@ export type EventData = {
   [EditorEvent.PASTE]: { text: string };
   [EditorEvent.INPUT]: Pick<InputEvent, 'inputType' | 'data'>;
   [EditorEvent.PRESS]: HTMLElementInfo;
+  [EditorEvent.LOG]: string;
 };
 
 export interface DocumentCommand {
@@ -84,7 +81,6 @@ export interface EditorTransferObject {
   listeners: Record<EditorEvent, boolean>;
   commands: string[];
   extraCommands: string[];
-  platform: PlatformOSType;
 }
 
 export type EventMessage<T extends EditorEvent> = {

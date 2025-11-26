@@ -1,6 +1,6 @@
 import { type DocumentCommand } from 'react-native-lite-text-editor';
 
-export class InsertCode implements DocumentCommand {
+export default class InsertCode implements DocumentCommand {
   readonly id = 'insertCode';
   readonly name = 'PRE';
 
@@ -32,7 +32,11 @@ export class InsertCode implements DocumentCommand {
   }
 
   exec() {
-    const flag = document.execCommand('formatBlock', false, `<${this.name}>`);
+    const flag = document.execCommand(
+      'formatBlock',
+      false,
+      '<' + this.name + '>'
+    );
     const { anchorNode } = document.getSelection() ?? {};
 
     const targetNode = [anchorNode, anchorNode?.parentNode].find(

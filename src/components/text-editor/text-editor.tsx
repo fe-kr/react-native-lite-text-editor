@@ -11,7 +11,6 @@ import {
 import { setAttribute, focus, select, insertStyle } from '../../config/actions';
 import type {
   Action,
-  DocumentCommandConstructor,
   DocumentCommandId,
   EditorEvent as EditorEventType,
   Event,
@@ -46,7 +45,6 @@ export interface TextEditorProps
   placeholder?: string;
   content?: string;
   commands?: DocumentCommandId[];
-  extraCommands?: DocumentCommandConstructor[];
   styles?: string;
   defaultStyles?: string;
   onBlur?: (e: Event<EventData['blur']>) => void;
@@ -61,16 +59,16 @@ export interface TextEditorProps
 }
 
 export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
-  (
-    {
-      autoFocus = false,
-      autoCapitalize = 'none',
-      contentEditable = true,
-      autoCorrect = 'off',
-      placeholder = '',
-      enterKeyHint = 'enter',
-      content = '',
-      initialSelect = false,
+  (props, outerRef) => {
+    const {
+      autoFocus,
+      autoCapitalize,
+      contentEditable,
+      autoCorrect,
+      placeholder,
+      enterKeyHint,
+      content,
+      initialSelect,
       source,
       defaultStyles,
       styles,
@@ -86,14 +84,12 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       onLoad,
       onLoadStart,
       onMessage,
-      commands = ['*'],
-      extraCommands = [],
+      commands,
       injectedJavaScriptObject,
-      injectedJavaScriptBeforeContentLoaded = 'void 0;',
+      injectedJavaScriptBeforeContentLoaded,
       ...webViewProps
-    },
-    outerRef
-  ) => {
+    } = { ...defaultProps, ...props };
+
     const readyRef = useRef(false);
     const ref = useRef<React.ComponentRef<typeof WebView>>(null);
     const inputRef = useRef<React.ComponentRef<TextInput> | null>(null);
@@ -117,9 +113,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     const injectedJSObject = useMemo(
       () => ({
         ...injectedJavaScriptObject,
-        platform: Platform.OS,
         commands: commands,
-        extraCommands: extraCommands.map((command) => command.toString()),
         listeners: {
           [EditorEvent.BLUR]: !!onBlur,
           [EditorEvent.CHANGE]: !!onChange,
@@ -135,6 +129,8 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [readyRef.current]
     );
+
+    const injectedJsBeforeContentLoaded = `window.RNLTE = ${globalVars}; ${injectedJavaScriptBeforeContentLoaded}`;
 
     const isReady = useCallback(() => readyRef.current, []);
 
@@ -295,13 +291,10 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     return (
       <>
         <WebView
-          {...defaultProps}
           {...webViewProps}
           ref={ref}
           injectedJavaScriptObject={injectedJSObject}
-          injectedJavaScriptBeforeContentLoaded={
-            injectedJavaScriptBeforeContentLoaded
-          }
+          injectedJavaScriptBeforeContentLoaded={injectedJsBeforeContentLoaded}
           source={webViewSource}
           onLoad={onWebViewLoad}
           onLoadStart={onWebViewLoadStart}
@@ -330,7 +323,27 @@ const innerStyles = StyleSheet.create({
   },
 });
 
+const globalVars = JSON.stringify({
+  __DEV__: __DEV__,
+  platformOS: Platform.OS,
+  extraCommands: [],
+} satisfies Window['RNLTE']);
+
 const defaultProps = {
+  // Editor
+  autoFocus: false,
+  autoCapitalize: 'none',
+  contentEditable: true,
+  autoCorrect: 'off',
+  placeholder: '',
+  enterKeyHint: 'enter',
+  content: '',
+  initialSelect: false,
+  commands: [],
+
+  // WebView
   originWhitelist: ['*'],
+  javaScriptEnabled: true,
+  injectedJavaScriptBeforeContentLoaded: '',
   style: innerStyles.webView,
-};
+} satisfies TextEditorProps;

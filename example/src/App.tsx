@@ -21,7 +21,7 @@ import { defaultStyles } from './config/styles';
 import { content } from './config/content';
 import { createConfig } from './config/toolbar';
 import { injectedJsBeforeContentLoaded } from './config/scripts';
-import { logger } from './utils/logger';
+import type { WebViewMessageEvent } from 'react-native-webview';
 
 export default function App() {
   const editorRef = useRef<ExtendedWebView>(null!);
@@ -39,6 +39,10 @@ export default function App() {
     if (e.nativeEvent.tagName === 'A' && e.nativeEvent.href) {
       Linking.openURL(e.nativeEvent.href);
     }
+  }, []);
+
+  const onMessage = useCallback((e: WebViewMessageEvent) => {
+    logger(JSON.parse(e.nativeEvent.data));
   }, []);
 
   const [isLoading] = useFonts({
@@ -61,17 +65,15 @@ export default function App() {
         ref={editorRef}
         containerStyle={styles.container}
         placeholder="Type text here..."
-        // extraCommands={extraCommands} // TODO: fix focus issue
         defaultStyles={defaultStyles}
         onSelectionChange={onSelectionChange}
         onPress={onElementPress}
         injectedJavaScriptBeforeContentLoaded={injectedJsBeforeContentLoaded}
         onPaste={logger}
         onBlur={logger}
-        onKeyDown={logger}
-        onKeyUp={logger}
         onFocus={logger}
         onChange={logger}
+        onMessage={onMessage}
         content={content}
       />
 
@@ -95,6 +97,10 @@ const Separator = () => <View style={styles.separator} />;
 const Icon = MaterialIcons as ToolbarProps['Icon'];
 
 const toolbarConfig = createConfig();
+
+const logger = <T,>(data: T, level: 'log' | 'warn' | 'error' = 'log') => {
+  if (__DEV__) console[level](data);
+};
 
 const fontKey = Platform.select({
   web: 'MaterialIcons-Regular',

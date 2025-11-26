@@ -1,4 +1,4 @@
-import { debounce } from './web-editor.lib';
+import { debounce, postMessage } from './web-editor.lib';
 import { EditorEvent } from '../../config/enum';
 
 import { EditorService } from './web-editor.service';
@@ -55,10 +55,10 @@ export default class EditorModule {
       if (options?.listeners[EditorEvent.CHANGE]) this.onChange();
     });
 
-    (options?.platform === 'android' ? document : window).addEventListener(
-      'message',
-      this.onMessage as EventListener
-    );
+    (window.RNLTE.platformOS === 'android'
+      ? document
+      : window
+    ).addEventListener('message', this.onMessage as EventListener);
   };
 
   injectedObjectJson = (): EditorTransferObject | null => {
@@ -72,9 +72,7 @@ export default class EditorModule {
   };
 
   postMessage = <T extends EditorEventType>(type: T, payload: EventData[T]) => {
-    const message = JSON.stringify({ type, payload });
-
-    window.ReactNativeWebView?.postMessage(message);
+    postMessage(type, payload);
   };
 
   parseMessage = (message: string): Action | null => {
