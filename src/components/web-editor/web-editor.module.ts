@@ -1,4 +1,4 @@
-import { debounce, postMessage } from './web-editor.lib';
+import { debounce } from './web-editor.lib';
 import { EditorEvent } from '../../config/enum';
 
 import { EditorService } from './web-editor.service';
@@ -72,7 +72,9 @@ export default class EditorModule {
   };
 
   postMessage = <T extends EditorEventType>(type: T, payload: EventData[T]) => {
-    postMessage(type, payload);
+    const message = JSON.stringify({ type, payload });
+
+    window.ReactNativeWebView?.postMessage(message);
   };
 
   parseMessage = (message: string): Action | null => {

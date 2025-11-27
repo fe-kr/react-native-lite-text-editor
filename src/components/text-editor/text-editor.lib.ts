@@ -9,6 +9,12 @@ export const createEvent = <T extends EditorEvent>(
     nativeEvent: action.payload,
   } as Event<EventData[T]>);
 
+export const logger = `(payload) => {
+    if (!${__DEV__}) return;
+    const message = JSON.stringify({ type: 'log', payload });
+    window.ReactNativeWebView?.postMessage(message);
+  }`;
+
 export const isActionLike = <T>(value: unknown): value is T => {
   return (
     !!value &&
@@ -17,3 +23,23 @@ export const isActionLike = <T>(value: unknown): value is T => {
     typeof value.type === 'string'
   );
 };
+
+export class GlobalVars<T extends object> {
+  private base: string;
+  private strings: string[];
+
+  constructor(private name: string) {
+    this.base = `window.${this.name}`;
+    this.strings = [`${this.base} = {}`];
+  }
+
+  set(key: keyof T, value: string) {
+    this.strings.push(`${this.base}.${key as string} = ${value}`);
+
+    return this;
+  }
+
+  build(...extras: string[]) {
+    return this.strings.concat(extras).join(';');
+  }
+}

@@ -17,6 +17,7 @@ import type {
   EventData,
   EventMessage,
   ExtendedWebView,
+  RNLTE,
 } from '../../types';
 import {
   Platform,
@@ -32,7 +33,12 @@ import type {
   WebViewNavigation,
   WebViewProps,
 } from 'react-native-webview';
-import { createEvent, isActionLike } from './text-editor.lib';
+import {
+  createEvent,
+  GlobalVars,
+  isActionLike,
+  logger,
+} from './text-editor.lib';
 
 export interface TextEditorProps
   extends Omit<WebViewProps, 'onBlur' | 'onFocus'> {
@@ -45,6 +51,7 @@ export interface TextEditorProps
   placeholder?: string;
   content?: string;
   commands?: DocumentCommandId[];
+  extraCommands?: string[];
   styles?: string;
   defaultStyles?: string;
   onBlur?: (e: Event<EventData['blur']>) => void;
@@ -85,6 +92,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       onLoadStart,
       onMessage,
       commands,
+      extraCommands,
       injectedJavaScriptObject,
       injectedJavaScriptBeforeContentLoaded,
       ...webViewProps
@@ -130,7 +138,12 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       [readyRef.current]
     );
 
-    const injectedJsBeforeContentLoaded = `window.RNLTE = ${globalVars}; ${injectedJavaScriptBeforeContentLoaded}`;
+    const injectedJsBeforeContentLoaded = new GlobalVars<RNLTE>('RNLTE')
+      .set('__DEV__', `${__DEV__}`)
+      .set('platformOS', `"${Platform.OS}"`)
+      .set('log', logger)
+      .set('extraCommands', `[${extraCommands}]`)
+      .build(injectedJavaScriptBeforeContentLoaded);
 
     const isReady = useCallback(() => readyRef.current, []);
 
@@ -323,12 +336,6 @@ const innerStyles = StyleSheet.create({
   },
 });
 
-const globalVars = JSON.stringify({
-  __DEV__: __DEV__,
-  platformOS: Platform.OS,
-  extraCommands: [],
-} satisfies Window['RNLTE']);
-
 const defaultProps = {
   // Editor
   autoFocus: false,
@@ -340,6 +347,7 @@ const defaultProps = {
   content: '',
   initialSelect: false,
   commands: [],
+  extraCommands: [],
 
   // WebView
   originWhitelist: ['*'],

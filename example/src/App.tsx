@@ -20,8 +20,8 @@ import { useFonts } from 'expo-font';
 import { defaultStyles } from './config/styles';
 import { content } from './config/content';
 import { createConfig } from './config/toolbar';
-import { injectedJsBeforeContentLoaded } from './config/scripts';
 import type { WebViewMessageEvent } from 'react-native-webview';
+import extraCommands from '../generated/commands';
 
 export default function App() {
   const editorRef = useRef<ExtendedWebView>(null!);
@@ -68,7 +68,7 @@ export default function App() {
         defaultStyles={defaultStyles}
         onSelectionChange={onSelectionChange}
         onPress={onElementPress}
-        injectedJavaScriptBeforeContentLoaded={injectedJsBeforeContentLoaded}
+        extraCommands={extraCommands}
         onPaste={logger}
         onBlur={logger}
         onFocus={logger}
