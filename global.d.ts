@@ -1,9 +1,8 @@
-import type { RNLTE, ReactNativeWebView } from './src/types';
+import type { EditorTransferObject } from './src/types';
 
 declare global {
   interface Window {
-    RNLTE: RNLTE;
-    ReactNativeWebView: ReactNativeWebView;
+    RNLTE: EditorTransferObject;
   }
 }
 

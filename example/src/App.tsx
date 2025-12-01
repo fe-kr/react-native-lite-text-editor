@@ -62,6 +62,7 @@ export default function App() {
       <TextEditor
         initialSelect
         autoFocus
+        webviewDebuggingEnabled
         ref={editorRef}
         containerStyle={styles.container}
         placeholder="Type text here..."

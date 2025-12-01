@@ -4,8 +4,8 @@ export const EditorEvent = {
   PASTE: 'paste',
   INPUT: 'input',
   CHANGE: 'change',
-  KEY_UP: 'keyUp',
-  KEY_DOWN: 'keyDown',
+  KEY_UP: 'keyup',
+  KEY_DOWN: 'keydown',
   SELECT: 'select',
   PRESS: 'press',
 } as const;

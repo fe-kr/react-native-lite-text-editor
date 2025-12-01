@@ -10,7 +10,8 @@ export type DocumentCommandId = ValueOf<typeof DocumentCommandId>;
 export type HTMLElementTag = keyof HTMLElementTagNameMap;
 export type EditorEvent = ValueOf<typeof EditorEvent>;
 export type ValueOf<T extends object> = T[keyof T];
-export type Callback = () => void;
+export type Callback = (...args: any[]) => void;
+export type Constructor<T = any, P = any> = new (...args: P[]) => T;
 
 export interface ExtendedWebView extends WebView {
   focus: Callback;
@@ -68,16 +69,11 @@ export interface DocumentCommand {
   exec(value?: unknown): boolean;
 }
 
-export interface ReactNativeWebView {
-  postMessage: (message: string) => void;
-  injectedObjectJson: () => string;
-}
-
-export interface RNLTE {
-  __DEV__: boolean;
-  platformOS: PlatformOSType;
-  extraCommands: DocumentCommandConstructor[];
-  log: (data: any) => void;
+export interface EditorTransferObject {
+  platform: PlatformOSType;
+  extraCommands: string[];
+  commands: DocumentCommandId[];
+  listeners: Record<EditorEvent, boolean>;
 }
 
 export type CommandsInfo = Record<
@@ -87,16 +83,6 @@ export type CommandsInfo = Record<
     enabled: ReturnType<DocumentCommand['queryEnabled']>;
   }
 >;
-
-export type DocumentCommandConstructor<
-  T extends DocumentCommand = DocumentCommand
-> = new (editor: HTMLElement) => T;
-
-export interface EditorTransferObject {
-  listeners: Record<EditorEvent, boolean>;
-  commands: string[];
-  extraCommands: string[];
-}
 
 export type EventMessage<T extends EditorEvent> = {
   type: T;

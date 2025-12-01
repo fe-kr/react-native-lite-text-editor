@@ -9,38 +9,33 @@ import type {
   EventData,
 } from '../../types';
 
-export default class EditorModule {
+class EditorModule {
   view: HTMLElement;
   service: EditorService;
 
-  constructor() {
+  constructor(private options: EditorTransferObject) {
     this.view = document.querySelector('#rnlte-root')!;
 
-    const options = this.injectedObjectJson();
+    this.service = new EditorService(this.view, this.options);
 
-    this.service = new EditorService(this.view, options);
-
-    this.addListeners(options);
+    this.addListeners();
   }
 
-  addListeners = (options: EditorTransferObject | null) => {
+  addListeners = () => {
     Object.entries({
-      [EditorEvent.BLUR]: ['blur', this.onBlur],
-      [EditorEvent.FOCUS]: ['focus', this.onFocus],
-      [EditorEvent.PASTE]: ['paste', this.onPaste],
-      [EditorEvent.INPUT]: ['input', this.onInput],
-      [EditorEvent.PRESS]: ['click', this.onPress],
-      [EditorEvent.KEY_UP]: ['keyup', this.onKeyUp],
-      [EditorEvent.KEY_DOWN]: ['keydown', this.onKeyDown],
-    } as const).forEach(([key, args]) => {
-      if (!options?.listeners[key as EditorEventType]) return;
-
-      const [type, callback] = args;
+      [EditorEvent.BLUR]: this.onBlur,
+      [EditorEvent.FOCUS]: this.onFocus,
+      [EditorEvent.PASTE]: this.onPaste,
+      [EditorEvent.INPUT]: this.onInput,
+      [EditorEvent.KEY_UP]: this.onKeyUp,
+      [EditorEvent.KEY_DOWN]: this.onKeyDown,
+    } as const).forEach(([type, callback]) => {
+      if (!this.options?.listeners[type as EditorEventType]) return;
 
       this.view.addEventListener(type, callback as EventListener);
     });
 
-    if (options?.listeners[EditorEvent.SELECT]) {
+    if (this.options.listeners[EditorEvent.SELECT]) {
       this.view.addEventListener('keydown', this.onSelect);
       this.view.addEventListener('touchcancel', this.onSelect);
       this.view.addEventListener('touchend', this.onSelect);
@@ -50,31 +45,27 @@ export default class EditorModule {
       });
     }
 
+    if (this.options.listeners[EditorEvent.PRESS]) {
+      this.view.addEventListener('click', this.onPress);
+    }
+
     this.view.addEventListener('input', () => {
       if (this.view.innerHTML === '<br>') this.view.innerHTML = '';
-      if (options?.listeners[EditorEvent.CHANGE]) this.onChange();
+      if (this.options.listeners[EditorEvent.CHANGE]) this.onChange();
     });
 
-    (window.RNLTE.platformOS === 'android'
-      ? document
-      : window
-    ).addEventListener('message', this.onMessage as EventListener);
-  };
-
-  injectedObjectJson = (): EditorTransferObject | null => {
-    try {
-      const injectedJson = window.ReactNativeWebView?.injectedObjectJson();
-
-      return JSON.parse(injectedJson ?? null!);
-    } catch {
-      return null;
-    }
+    (this.options.platform === 'android' ? document : window).addEventListener(
+      'message',
+      this.onMessage as EventListener
+    );
   };
 
   postMessage = <T extends EditorEventType>(type: T, payload: EventData[T]) => {
+    if (!('ReactNativeWebView' in window)) return;
+
     const message = JSON.stringify({ type, payload });
 
-    window.ReactNativeWebView?.postMessage(message);
+    (window.ReactNativeWebView as Window).postMessage(message);
   };
 
   parseMessage = (message: string): Action | null => {
@@ -144,4 +135,8 @@ export default class EditorModule {
 
     if (meta?.selectable) this.onSelect();
   };
+}
+
+export default function main(globalVars: EditorTransferObject) {
+  return new EditorModule(globalVars);
 }

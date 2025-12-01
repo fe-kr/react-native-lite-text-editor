@@ -1,9 +1,10 @@
 import * as BaseCommands from './commands/base-commands';
 import { InsertStyle } from './commands/insert-style';
 import { SetAttribute } from './commands/set-attribute';
+import { DocumentCommand } from './commands/command';
 import type {
   CommandsInfo,
-  DocumentCommand,
+  Constructor,
   EditorTransferObject,
   HTMLElementInfo,
 } from '../../types';
@@ -13,33 +14,43 @@ export class EditorService {
 
   constructor(
     private view: HTMLElement,
-    private options: EditorTransferObject | null
+    private options: EditorTransferObject
   ) {
     this.commands = new Map();
 
-    this.setCommands();
-  }
+    const baseCommands = Object.values(BaseCommands);
+    const groupedCommands = Object.groupBy(this.options.commands, (id) => id);
 
-  setCommands() {
-    const commands = Object.values(BaseCommands);
-    const { extraCommands } = window.RNLTE ?? {};
+    baseCommands.forEach((Command) => {
+      const command = this.createCommand(Command)!;
 
-    [...commands, InsertStyle, SetAttribute, ...extraCommands].forEach(
-      (Command) => {
-        const command = new Command(this.view);
+      if (!this.options.commands.length || command.id in groupedCommands) {
+        this.setCommand(command);
+      }
+    });
 
-        this.commands.set(command.id, command);
+    [InsertStyle, SetAttribute, ...this.options.extraCommands].forEach(
+      (Cmd) => {
+        const command = this.createCommand(Cmd);
+
+        this.setCommand(command);
       }
     );
-
-    this.options?.commands.forEach((id) => {
-      if (!this.commands.has(id)) return;
-
-      this.commands.delete(id);
-    });
   }
 
-  queryCommands() {
+  createCommand = (Command: unknown) => {
+    if (typeof Command !== 'function') return;
+
+    return new (Command as Constructor<DocumentCommand>)(this.view);
+  };
+
+  setCommand = (command?: DocumentCommand) => {
+    if (!command) return;
+
+    this.commands.set(command.id, command);
+  };
+
+  queryCommands = () => {
     const data = {} as CommandsInfo;
 
     this.commands.forEach((command, key) => {
@@ -50,9 +61,9 @@ export class EditorService {
     });
 
     return data;
-  }
+  };
 
-  getElementAttributes(e: Event): HTMLElementInfo | null {
+  getElementAttributes = (e: Event): HTMLElementInfo | null => {
     if (!(e.target instanceof HTMLElement)) return null;
 
     const tagName = e.target.tagName;
@@ -67,5 +78,5 @@ export class EditorService {
     }, {} as Record<string, unknown>);
 
     return { ...data, x, y, width, height, tagName } as HTMLElementInfo;
-  }
+  };
 }

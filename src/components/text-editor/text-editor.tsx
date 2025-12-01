@@ -17,7 +17,6 @@ import type {
   EventData,
   EventMessage,
   ExtendedWebView,
-  RNLTE,
 } from '../../types';
 import {
   Platform,
@@ -33,12 +32,7 @@ import type {
   WebViewNavigation,
   WebViewProps,
 } from 'react-native-webview';
-import {
-  createEvent,
-  GlobalVars,
-  isActionLike,
-  logger,
-} from './text-editor.lib';
+import { createEvent, isActionLike, GlobalVars } from './text-editor.lib';
 
 export interface TextEditorProps
   extends Omit<WebViewProps, 'onBlur' | 'onFocus'> {
@@ -59,8 +53,8 @@ export interface TextEditorProps
   onChange?: (e: Event<EventData['change']>) => void;
   onInput?: (e: Event<EventData['input']>) => void;
   onPress?: (e: Event<EventData['press']>) => void;
-  onKeyDown?: (e: Event<EventData['keyDown']>) => void;
-  onKeyUp?: (e: Event<EventData['keyUp']>) => void;
+  onKeyDown?: (e: Event<EventData['keydown']>) => void;
+  onKeyUp?: (e: Event<EventData['keyup']>) => void;
   onPaste?: (e: Event<EventData['paste']>) => void;
   onSelectionChange?: (e: Event<EventData['select']>) => void;
 }
@@ -93,8 +87,6 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       onMessage,
       commands,
       extraCommands,
-      injectedJavaScriptObject,
-      injectedJavaScriptBeforeContentLoaded,
       ...webViewProps
     } = { ...defaultProps, ...props };
 
@@ -102,10 +94,29 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     const ref = useRef<React.ComponentRef<typeof WebView>>(null);
     const inputRef = useRef<React.ComponentRef<TextInput> | null>(null);
 
-    const [webViewSource] = useState(() => ({
-      html: createHtml({ styles, defaultStyles, content }),
-      ...source,
-    }));
+    const [webViewSource] = useState(() => {
+      const globalVars = new GlobalVars()
+        .set('platform', Platform.OS)
+        .set('commands', commands)
+        .set('extraCommands', `[${extraCommands}]`, false)
+        .set('listeners', {
+          [EditorEvent.BLUR]: !!onBlur,
+          [EditorEvent.CHANGE]: !!onChange,
+          [EditorEvent.FOCUS]: !!onFocus,
+          [EditorEvent.INPUT]: !!onInput,
+          [EditorEvent.KEY_DOWN]: !!onKeyDown,
+          [EditorEvent.KEY_UP]: !!onKeyUp,
+          [EditorEvent.PASTE]: !!onPaste,
+          [EditorEvent.PRESS]: !!onPress,
+          [EditorEvent.SELECT]: !!onSelectionChange,
+        })
+        .build();
+
+      return {
+        html: createHtml({ styles, defaultStyles, globalVars, content }),
+        ...source,
+      };
+    });
 
     const attributes = useMemo(
       () => ({
@@ -117,33 +128,6 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       }),
       [autoCapitalize, autoCorrect, contentEditable, enterKeyHint, placeholder]
     );
-
-    const injectedJSObject = useMemo(
-      () => ({
-        ...injectedJavaScriptObject,
-        commands: commands,
-        listeners: {
-          [EditorEvent.BLUR]: !!onBlur,
-          [EditorEvent.CHANGE]: !!onChange,
-          [EditorEvent.FOCUS]: !!onFocus,
-          [EditorEvent.INPUT]: !!onInput,
-          [EditorEvent.KEY_DOWN]: !!onKeyDown,
-          [EditorEvent.KEY_UP]: !!onKeyUp,
-          [EditorEvent.PASTE]: !!onPaste,
-          [EditorEvent.PRESS]: !!onPress,
-          [EditorEvent.SELECT]: !!onSelectionChange,
-        },
-      }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [readyRef.current]
-    );
-
-    const injectedJsBeforeContentLoaded = new GlobalVars<RNLTE>('RNLTE')
-      .set('__DEV__', `${__DEV__}`)
-      .set('platformOS', `"${Platform.OS}"`)
-      .set('log', logger)
-      .set('extraCommands', `[${extraCommands}]`)
-      .build(injectedJavaScriptBeforeContentLoaded);
 
     const isReady = useCallback(() => readyRef.current, []);
 
@@ -227,12 +211,12 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
             }
 
             case EditorEvent.KEY_DOWN: {
-              onKeyDown?.(createEvent<'keyDown'>(action));
+              onKeyDown?.(createEvent<'keydown'>(action));
               break;
             }
 
             case EditorEvent.KEY_UP: {
-              onKeyUp?.(createEvent<'keyUp'>(action));
+              onKeyUp?.(createEvent<'keyup'>(action));
               break;
             }
 
@@ -306,8 +290,6 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
         <WebView
           {...webViewProps}
           ref={ref}
-          injectedJavaScriptObject={injectedJSObject}
-          injectedJavaScriptBeforeContentLoaded={injectedJsBeforeContentLoaded}
           source={webViewSource}
           onLoad={onWebViewLoad}
           onLoadStart={onWebViewLoadStart}
@@ -345,6 +327,8 @@ const defaultProps = {
   placeholder: '',
   enterKeyHint: 'enter',
   content: '',
+  styles: '',
+  defaultStyles: '',
   initialSelect: false,
   commands: [],
   extraCommands: [],
@@ -352,6 +336,6 @@ const defaultProps = {
   // WebView
   originWhitelist: ['*'],
   javaScriptEnabled: true,
-  injectedJavaScriptBeforeContentLoaded: '',
+  injectedJavaScriptBeforeContentLoaded: 'void 0;',
   style: innerStyles.webView,
 } satisfies TextEditorProps;
