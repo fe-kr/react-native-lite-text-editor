@@ -2,6 +2,7 @@ import * as BaseCommands from './commands/base-commands';
 import { InsertStyle } from './commands/insert-style';
 import { SetAttribute } from './commands/set-attribute';
 import { DocumentCommand } from './commands/command';
+import type { Storage } from './web-editor.storage';
 import type {
   CommandsInfo,
   Constructor,
@@ -10,32 +11,33 @@ import type {
 } from '../../types';
 
 export class EditorService {
-  commands: Map<string, DocumentCommand>;
-
   constructor(
     private view: HTMLElement,
+    private storage: Storage,
     private options: EditorTransferObject
   ) {
-    this.commands = new Map();
-
-    const baseCommands = Object.values(BaseCommands);
+    const commands: Record<string, DocumentCommand> = {};
     const groupedCommands = Object.groupBy(this.options.commands, (id) => id);
 
-    baseCommands.forEach((Command) => {
+    Object.values(BaseCommands).forEach((Command) => {
       const command = this.createCommand(Command)!;
 
       if (!this.options.commands.length || command.id in groupedCommands) {
-        this.setCommand(command);
+        commands[command.id] = command;
       }
     });
 
     [InsertStyle, SetAttribute, ...this.options.extraCommands].forEach(
-      (Cmd) => {
-        const command = this.createCommand(Cmd);
+      (Command) => {
+        const command = this.createCommand(Command);
 
-        this.setCommand(command);
+        if (!command) return;
+
+        commands[command.id] = command;
       }
     );
+
+    this.storage.setItem('commands', new Map(Object.entries(commands)));
   }
 
   createCommand = (Command: unknown) => {
@@ -44,16 +46,10 @@ export class EditorService {
     return new (Command as Constructor<DocumentCommand>)(this.view);
   };
 
-  setCommand = (command?: DocumentCommand) => {
-    if (!command) return;
-
-    this.commands.set(command.id, command);
-  };
-
   queryCommands = () => {
     const data = {} as CommandsInfo;
 
-    this.commands.forEach((command, key) => {
+    this.storage.getItem('commands')?.forEach((command, key) => {
       data[key] = {
         state: command.queryState(),
         enabled: command.queryEnabled(),
@@ -63,20 +59,17 @@ export class EditorService {
     return data;
   };
 
-  getElementAttributes = (e: Event): HTMLElementInfo | null => {
+  getElementAttributes = (e: Event) => {
     if (!(e.target instanceof HTMLElement)) return null;
 
-    const tagName = e.target.tagName;
-    const attributeNames = e.target.getAttributeNames();
+    return {
+      ...e.target.getAttributeNames().reduce<Record<any, any>>((acc, name) => {
+        acc[name] = (e.target as HTMLElement)[name as keyof HTMLElement];
 
-    const { x, y, width, height } = e.target.getBoundingClientRect();
-
-    const data = attributeNames.reduce((acc, name) => {
-      acc[name] = (e.target as HTMLElement)?.[name as keyof HTMLElement];
-
-      return acc;
-    }, {} as Record<string, unknown>);
-
-    return { ...data, x, y, width, height, tagName } as HTMLElementInfo;
+        return acc;
+      }, {}),
+      ...e.target.getBoundingClientRect(),
+      tagName: e.target.tagName,
+    } as unknown as HTMLElementInfo;
   };
 }

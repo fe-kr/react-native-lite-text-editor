@@ -8,6 +8,7 @@ export const EditorEvent = {
   KEY_DOWN: 'keydown',
   SELECT: 'select',
   PRESS: 'press',
+  LONG_PRESS: 'longPress',
 } as const;
 
 export const DocumentCommandId = {

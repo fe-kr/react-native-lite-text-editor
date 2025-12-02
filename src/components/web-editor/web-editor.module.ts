@@ -1,9 +1,10 @@
-import { debounce } from './web-editor.lib';
 import { EditorEvent } from '../../config/enum';
 
 import { EditorService } from './web-editor.service';
+import { Storage } from './web-editor.storage';
 import type {
   Action,
+  Callback,
   EditorEvent as EditorEventType,
   EditorTransferObject,
   EventData,
@@ -12,11 +13,14 @@ import type {
 class EditorModule {
   view: HTMLElement;
   service: EditorService;
+  storage: Storage;
 
   constructor(private options: EditorTransferObject) {
     this.view = document.querySelector('#rnlte-root')!;
 
-    this.service = new EditorService(this.view, this.options);
+    this.storage = new Storage();
+
+    this.service = new EditorService(this.view, this.storage, this.options);
 
     this.addListeners();
   }
@@ -45,8 +49,14 @@ class EditorModule {
       });
     }
 
-    if (this.options.listeners[EditorEvent.PRESS]) {
-      this.view.addEventListener('click', this.onPress);
+    if (
+      this.options.listeners[EditorEvent.PRESS] ||
+      this.options.listeners[EditorEvent.LONG_PRESS]
+    ) {
+      this.view.addEventListener('pointerdown', this.onPointerDown);
+      this.view.addEventListener('pointerup', this.onPointerUp);
+      this.view.addEventListener('pointerleave', this.clearLongPressTimer);
+      this.view.addEventListener('pointercancel', this.clearLongPressTimer);
     }
 
     this.view.addEventListener('input', () => {
@@ -116,10 +126,41 @@ class EditorModule {
     this.postMessage(EditorEvent.SELECT, { data });
   }, 50);
 
-  onPress = (e: PointerEvent) => {
-    const attributes = this.service.getElementAttributes(e);
+  onPointerDown = (e: PointerEvent) => {
+    if (this.options.listeners[EditorEvent.LONG_PRESS]) {
+      const attributes = this.service.getElementAttributes(e);
 
-    if (attributes) this.postMessage(EditorEvent.PRESS, attributes);
+      if (!attributes) return;
+
+      const timerId = setTimeout(
+        () => this.postMessage(EditorEvent.LONG_PRESS, attributes!),
+        this.options.delayLongPress
+      ) as unknown as number;
+
+      this.storage.setItem('longPress', { timerId, timeStamp: e.timeStamp });
+    }
+  };
+
+  onPointerUp = (e: PointerEvent) => {
+    const { timeStamp = Date.now() } = this.storage.getItem('longPress') ?? {};
+
+    const isLongPress =
+      this.options.listeners[EditorEvent.LONG_PRESS] &&
+      e.timeStamp - timeStamp >= this.options.delayLongPress;
+
+    this.clearLongPressTimer();
+
+    if (!isLongPress && this.options.listeners[EditorEvent.PRESS]) {
+      const attributes = this.service.getElementAttributes(e);
+
+      if (attributes) this.postMessage(EditorEvent.PRESS, attributes);
+    }
+  };
+
+  clearLongPressTimer = () => {
+    clearTimeout(this.storage.getItem('longPress')?.timerId);
+
+    this.storage.removeItem('longPress');
   };
 
   onMessage = (e: MessageEvent) => {
@@ -131,12 +172,25 @@ class EditorModule {
 
     if (meta?.focusable) this.view.focus();
 
-    this.service.commands.get(type)?.exec(payload);
+    this.storage.getItem('commands')?.get(type)?.exec(payload);
 
     if (meta?.selectable) this.onSelect();
   };
 }
 
-export default function main(globalVars: EditorTransferObject) {
-  return new EditorModule(globalVars);
+const debounce = <F extends Callback>(func: F, wait: number) => {
+  let timeoutId: number | null;
+
+  return function (this: ThisParameterType<F>, ...args: Parameters<F>) {
+    if (timeoutId) clearTimeout(timeoutId);
+
+    timeoutId = setTimeout(
+      () => func.apply(this, args),
+      wait
+    ) as unknown as number;
+  };
+};
+
+export default function main() {
+  return new EditorModule(window.RNLTE);
 }

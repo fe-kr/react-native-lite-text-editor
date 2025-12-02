@@ -59,6 +59,7 @@ export type EventData = {
   [EditorEvent.PASTE]: { text: string };
   [EditorEvent.INPUT]: Pick<InputEvent, 'inputType' | 'data'>;
   [EditorEvent.PRESS]: HTMLElementInfo;
+  [EditorEvent.LONG_PRESS]: HTMLElementInfo;
 };
 
 export interface DocumentCommand {
@@ -73,6 +74,7 @@ export interface EditorTransferObject {
   platform: PlatformOSType;
   extraCommands: string[];
   commands: DocumentCommandId[];
+  delayLongPress: number;
   listeners: Record<EditorEvent, boolean>;
 }
 

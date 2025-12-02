@@ -41,6 +41,7 @@ export interface TextEditorProps
   autoFocus?: boolean;
   contentEditable?: boolean;
   initialSelect?: boolean;
+  delayLongPress?: number;
   enterKeyHint?: TextInputProps['enterKeyHint'];
   placeholder?: string;
   content?: string;
@@ -53,6 +54,7 @@ export interface TextEditorProps
   onChange?: (e: Event<EventData['change']>) => void;
   onInput?: (e: Event<EventData['input']>) => void;
   onPress?: (e: Event<EventData['press']>) => void;
+  onLongPress?: (e: Event<EventData['longPress']>) => void;
   onKeyDown?: (e: Event<EventData['keydown']>) => void;
   onKeyUp?: (e: Event<EventData['keyup']>) => void;
   onPaste?: (e: Event<EventData['paste']>) => void;
@@ -68,6 +70,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       autoCorrect,
       placeholder,
       enterKeyHint,
+      delayLongPress,
       content,
       initialSelect,
       source,
@@ -81,6 +84,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       onKeyUp,
       onPaste,
       onPress,
+      onLongPress,
       onInput,
       onLoad,
       onLoadStart,
@@ -99,6 +103,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
         .set('platform', Platform.OS)
         .set('commands', commands)
         .set('extraCommands', `[${extraCommands}]`, false)
+        .set('delayLongPress', delayLongPress)
         .set('listeners', {
           [EditorEvent.BLUR]: !!onBlur,
           [EditorEvent.CHANGE]: !!onChange,
@@ -108,6 +113,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
           [EditorEvent.KEY_UP]: !!onKeyUp,
           [EditorEvent.PASTE]: !!onPaste,
           [EditorEvent.PRESS]: !!onPress,
+          [EditorEvent.LONG_PRESS]: !!onLongPress,
           [EditorEvent.SELECT]: !!onSelectionChange,
         })
         .build();
@@ -230,6 +236,11 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
               break;
             }
 
+            case EditorEvent.LONG_PRESS: {
+              onLongPress?.(createEvent<'longPress'>(action));
+              break;
+            }
+
             case EditorEvent.INPUT: {
               onInput?.(createEvent<'input'>(action));
               break;
@@ -252,6 +263,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
         onKeyUp,
         onPaste,
         onPress,
+        onLongPress,
         onInput,
       ]
     );
@@ -324,6 +336,7 @@ const defaultProps = {
   autoCapitalize: 'none',
   contentEditable: true,
   autoCorrect: 'off',
+  delayLongPress: 500,
   placeholder: '',
   enterKeyHint: 'enter',
   content: '',

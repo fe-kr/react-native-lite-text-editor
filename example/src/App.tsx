@@ -64,11 +64,13 @@ export default function App() {
         autoFocus
         webviewDebuggingEnabled
         ref={editorRef}
+        delayLongPress={1000}
         containerStyle={styles.container}
         placeholder="Type text here..."
         defaultStyles={defaultStyles}
         onSelectionChange={onSelectionChange}
         onPress={onElementPress}
+        onLongPress={logger}
         extraCommands={extraCommands}
         onPaste={logger}
         onBlur={logger}
