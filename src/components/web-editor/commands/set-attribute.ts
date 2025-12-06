@@ -22,9 +22,10 @@ export class SetAttribute implements DocumentCommand {
     for (const key in values) {
       if (key === 'innerHTML') {
         this.view.innerHTML = values[key] ?? '';
-      } else {
-        this.view.setAttribute(key, values[key] ?? '');
+        continue;
       }
+
+      this.view.setAttribute(key, values[key] ?? '');
     }
 
     return true;

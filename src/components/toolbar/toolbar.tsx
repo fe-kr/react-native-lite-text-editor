@@ -61,7 +61,7 @@ const Toolbar = <T extends CommandsInfo>({
   );
 
   const dataSettings = useMemo(
-    () => ({ data, dispatch, focus }),
+    () => ({ data, dispatch, focus: () => focus() }),
     [data, dispatch, focus]
   );
 

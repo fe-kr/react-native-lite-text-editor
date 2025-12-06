@@ -101,11 +101,6 @@ export const enableObjectResizing: Action = {
   meta: { focusable: true, selectable: true },
 };
 
-export const focus: Action = {
-  type: InnerDocumentCommandId.FOCUS,
-  meta: { focusable: true },
-};
-
 export const select: Action = {
   type: InnerDocumentCommandId.SELECT,
   meta: { selectable: true },
@@ -249,6 +244,12 @@ export const insertStyle: ActionCreator<string> = (payload, meta) => ({
   type: InnerDocumentCommandId.INSERT_STYLE,
   payload,
   meta,
+});
+
+export const focus: ActionCreator<'start' | 'end'> = (payload, meta) => ({
+  type: InnerDocumentCommandId.FOCUS,
+  payload,
+  meta: meta ?? { focusable: true },
 });
 
 export const setAttribute: ActionCreator<Record<string, string | boolean>> = (

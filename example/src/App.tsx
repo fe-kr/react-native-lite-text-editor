@@ -27,23 +27,39 @@ export default function App() {
   const editorRef = useRef<ExtendedWebView>(null!);
   const [state, setState] = useState<CommandsInfo>(null!);
 
-  const onSelectionChange = useCallback((e: Event<EventData['select']>) => {
-    logger(e);
+  const logger = useCallback(
+    (data: unknown, level: 'log' | 'warn' | 'error' = 'log') => {
+      if (__DEV__) console[level](data);
+    },
+    []
+  );
 
-    setState(e.nativeEvent.data);
-  }, []);
+  const onSelectionChange = useCallback(
+    (e: Event<EventData['select']>) => {
+      logger(e);
 
-  const onElementPress = useCallback((e: Event<EventData['press']>) => {
-    logger(e);
+      setState(e.nativeEvent.data);
+    },
+    [logger]
+  );
 
-    if (e.nativeEvent.tagName === 'A' && e.nativeEvent.href) {
-      Linking.openURL(e.nativeEvent.href);
-    }
-  }, []);
+  const onElementPress = useCallback(
+    (e: Event<EventData['press']>) => {
+      logger(e);
 
-  const onMessage = useCallback((e: WebViewMessageEvent) => {
-    logger(JSON.parse(e.nativeEvent.data));
-  }, []);
+      if (e.nativeEvent.tagName === 'A' && e.nativeEvent.href) {
+        Linking.openURL(e.nativeEvent.href);
+      }
+    },
+    [logger]
+  );
+
+  const onMessage = useCallback(
+    (e: WebViewMessageEvent) => {
+      logger(JSON.parse(e.nativeEvent.data));
+    },
+    [logger]
+  );
 
   const [isLoading] = useFonts({
     [fontKey]: require('@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf'),
@@ -60,8 +76,7 @@ export default function App() {
   return (
     <View style={styles.wrapper}>
       <TextEditor
-        initialSelect
-        autoFocus
+        autoSelect
         webviewDebuggingEnabled
         ref={editorRef}
         delayLongPress={1000}
@@ -95,20 +110,6 @@ export default function App() {
     </View>
   );
 }
-
-const Separator = () => <View style={styles.separator} />;
-const Icon = MaterialIcons as ToolbarProps['Icon'];
-
-const toolbarConfig = createConfig();
-
-const logger = <T,>(data: T, level: 'log' | 'warn' | 'error' = 'log') => {
-  if (__DEV__) console[level](data);
-};
-
-const fontKey = Platform.select({
-  web: 'MaterialIcons-Regular',
-  default: 'MaterialIcons',
-});
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -152,6 +153,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
+
+const toolbarConfig = createConfig();
+
+const fontKey = Platform.select({
+  web: 'MaterialIcons-Regular',
+  default: 'MaterialIcons',
+});
+
+const Separator = () => <View style={styles.separator} />;
+const Icon = MaterialIcons as ToolbarProps['Icon'];
 
 const dropdownIconProps: ToolbarProps['dropdownIconProps'] = {
   name: 'arrow-drop-down',

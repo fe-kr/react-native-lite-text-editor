@@ -20,10 +20,9 @@ import type {
 } from '../../types';
 import {
   Platform,
-  TextInput,
   type TextInputProps,
-  StyleSheet,
   type NativeSyntheticEvent,
+  View,
 } from 'react-native';
 import createHtml from '../web-editor';
 import { EditorEvent } from '../../config/enum';
@@ -32,15 +31,16 @@ import type {
   WebViewNavigation,
   WebViewProps,
 } from 'react-native-webview';
-import { createEvent, isActionLike, GlobalVars } from './text-editor.lib';
+import { createEvent, isActionLike, GlobalVars } from './text-editor-lib';
+import { Container } from './text-editor-container';
 
 export interface TextEditorProps
   extends Omit<WebViewProps, 'onBlur' | 'onFocus'> {
   autoCapitalize?: TextInputProps['autoCapitalize'];
   autoCorrect?: 'on' | 'off';
-  autoFocus?: boolean;
+  autoFocus?: 'start' | 'end';
   contentEditable?: boolean;
-  initialSelect?: boolean;
+  autoSelect?: boolean;
   delayLongPress?: number;
   enterKeyHint?: TextInputProps['enterKeyHint'];
   placeholder?: string;
@@ -72,7 +72,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       enterKeyHint,
       delayLongPress,
       content,
-      initialSelect,
+      autoSelect,
       source,
       defaultStyles,
       styles,
@@ -96,7 +96,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
 
     const readyRef = useRef(false);
     const ref = useRef<React.ComponentRef<typeof WebView>>(null);
-    const inputRef = useRef<React.ComponentRef<TextInput> | null>(null);
+    const containerRef = useRef<React.ComponentRef<typeof View>>(null);
 
     const [webViewSource] = useState(() => {
       const globalVars = new GlobalVars()
@@ -143,15 +143,16 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       ref.current?.postMessage(message);
     }, []);
 
-    const focusEditor = useCallback(() => {
-      if (Platform.OS === 'android') {
-        inputRef.current?.focus();
-      }
+    const focusEditor = useCallback(
+      (position: 'start' | 'end') => {
+        containerRef.current?.focus();
 
-      ref.current?.requestFocus();
+        ref.current?.requestFocus();
 
-      dispatch(focus);
-    }, [dispatch]);
+        dispatch(focus(position));
+      },
+      [dispatch]
+    );
 
     const onWebViewLoadStart = useCallback(
       (e: NativeSyntheticEvent<WebViewNavigation>) => {
@@ -168,9 +169,9 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
 
         dispatch(setAttribute(attributes));
 
-        if (autoFocus && contentEditable) focusEditor();
+        if (autoFocus && contentEditable) focusEditor(autoFocus);
 
-        if (initialSelect) dispatch(select);
+        if (autoSelect) dispatch(select);
 
         onLoad?.(e);
       },
@@ -180,7 +181,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
         autoFocus,
         contentEditable,
         focusEditor,
-        initialSelect,
+        autoSelect,
         onLoad,
       ]
     );
@@ -298,7 +299,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     }, [dispatch, isReady, content]);
 
     return (
-      <>
+      <Container ref={containerRef}>
         <WebView
           {...webViewProps}
           ref={ref}
@@ -307,32 +308,13 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
           onLoadStart={onWebViewLoadStart}
           onMessage={onWebViewMessage}
         />
-
-        {Platform.OS === 'android' && (
-          <TextInput ref={inputRef} style={innerStyles.input} />
-        )}
-      </>
+      </Container>
     );
   }
 );
 
-const innerStyles = StyleSheet.create({
-  input: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    zIndex: -999,
-    bottom: -999,
-    left: -999,
-  },
-  webView: {
-    backgroundColor: 'transparent',
-  },
-});
-
 const defaultProps = {
   // Editor
-  autoFocus: false,
   autoCapitalize: 'none',
   contentEditable: true,
   autoCorrect: 'off',
@@ -342,7 +324,7 @@ const defaultProps = {
   content: '',
   styles: '',
   defaultStyles: '',
-  initialSelect: false,
+  autoSelect: false,
   commands: [],
   extraCommands: [],
 
@@ -350,5 +332,5 @@ const defaultProps = {
   originWhitelist: ['*'],
   javaScriptEnabled: true,
   injectedJavaScriptBeforeContentLoaded: 'void 0;',
-  style: innerStyles.webView,
+  style: { backgroundColor: 'transparent' },
 } satisfies TextEditorProps;

@@ -1,6 +1,7 @@
 import * as BaseCommands from './commands/base-commands';
 import { InsertStyle } from './commands/insert-style';
 import { SetAttribute } from './commands/set-attribute';
+import { Focus } from './commands/focus';
 import { DocumentCommand } from './commands/command';
 import type { Storage } from './web-editor.storage';
 import type {
@@ -27,7 +28,7 @@ export class EditorService {
       }
     });
 
-    [InsertStyle, SetAttribute, ...this.options.extraCommands].forEach(
+    [InsertStyle, SetAttribute, Focus, ...this.options.extraCommands].forEach(
       (Command) => {
         const command = this.createCommand(Command);
 

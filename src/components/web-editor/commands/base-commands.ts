@@ -1,5 +1,6 @@
 import { DocumentCommand } from './command';
 import { DocumentCommandId } from '../../../config/enum';
+import type { HTMLElementTag } from '../../../types';
 
 export class Bold extends DocumentCommand {
   readonly id = DocumentCommandId.BOLD;
@@ -112,7 +113,7 @@ export class FormatBlock extends DocumentCommand {
     return super.queryValue();
   }
 
-  exec(value: keyof HTMLElementTagNameMap) {
+  exec(value: HTMLElementTag) {
     return super.exec(`<${value}>`);
   }
 }
