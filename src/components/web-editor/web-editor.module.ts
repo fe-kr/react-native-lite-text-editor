@@ -1,7 +1,7 @@
 import { EditorEvent } from '../../config/enum';
 
 import { EditorService } from './web-editor.service';
-import { Storage } from './web-editor.storage';
+import { EditorStorage } from './web-editor.storage';
 import type {
   Action,
   Callback,
@@ -13,12 +13,12 @@ import type {
 class EditorModule {
   view: HTMLElement;
   service: EditorService;
-  storage: Storage;
+  storage: EditorStorage;
 
   constructor(private options: EditorTransferObject) {
     this.view = document.querySelector('#rnlte-root')!;
 
-    this.storage = new Storage();
+    this.storage = new EditorStorage();
 
     this.service = new EditorService(this.view, this.storage, this.options);
 

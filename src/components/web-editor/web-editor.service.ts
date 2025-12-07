@@ -3,7 +3,7 @@ import { InsertStyle } from './commands/insert-style';
 import { SetAttribute } from './commands/set-attribute';
 import { Focus } from './commands/focus';
 import { DocumentCommand } from './commands/command';
-import type { Storage } from './web-editor.storage';
+import type { EditorStorage } from './web-editor.storage';
 import type {
   CommandsInfo,
   Constructor,
@@ -14,7 +14,7 @@ import type {
 export class EditorService {
   constructor(
     private view: HTMLElement,
-    private storage: Storage,
+    private storage: EditorStorage,
     private options: EditorTransferObject
   ) {
     const commands: Record<string, DocumentCommand> = {};

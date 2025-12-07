@@ -23,6 +23,7 @@ import {
   BackHandler,
   Modal,
   type ModalProps,
+  type ScrollViewProps,
 } from 'react-native';
 import type { Callback } from '../../../types';
 
@@ -36,6 +37,7 @@ export interface PopoverProps extends ModalProps {
   onDismiss?: Callback;
   wrapperStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
+  scrollableProps?: ScrollViewProps;
   overlayStyle?: StyleProp<ViewStyle>;
 }
 
@@ -52,6 +54,7 @@ export const Popover = ({
   wrapperStyle,
   containerStyle,
   overlayStyle,
+  scrollableProps,
   transparent = true,
   ...props
 }: PopoverProps) => {
@@ -325,7 +328,8 @@ export const Popover = ({
           >
             <ContentWrapper
               {...(!!menuScrollHeight && {
-                style: { height: menuScrollHeight },
+                ...scrollableProps,
+                style: [{ height: menuScrollHeight }, scrollableProps?.style],
               })}
             >
               {children}

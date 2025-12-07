@@ -1,6 +1,6 @@
 import type { DocumentCommand } from '../../types';
 
-interface StorageData {
+interface EditorStorageData {
   commands: Map<string, DocumentCommand>;
   longPress?: {
     timeStamp: number;
@@ -8,8 +8,8 @@ interface StorageData {
   };
 }
 
-export class Storage<
-  T extends object = StorageData,
+export class EditorStorage<
+  T extends EditorStorageData = EditorStorageData,
   K extends keyof T = keyof T
 > {
   private data: Partial<T>;

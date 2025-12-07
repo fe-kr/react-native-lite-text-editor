@@ -14,6 +14,7 @@ export {
   type ToolbarRenderItem,
   type CustomToolbarItem,
   useStyle,
+  StyleContext,
 } from './components/toolbar';
 
 export * as actions from './config/actions';

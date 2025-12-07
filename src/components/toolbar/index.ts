@@ -11,4 +11,4 @@ export {
   type CustomToolbarItem,
 } from './toolbar-renderer';
 export { useToolbar, withToolbar } from './model/toolbar-context';
-export { useStyle } from './model/style-context';
+export { useStyle, StyleContext } from './model/style-context';
