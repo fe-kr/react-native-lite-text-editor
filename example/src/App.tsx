@@ -22,6 +22,7 @@ import { content } from './config/content';
 import { createConfig } from './config/toolbar';
 import type { WebViewMessageEvent } from 'react-native-webview';
 import extraCommands from '../generated/commands';
+import { ToolbarItem } from './components/toolbar-item';
 
 export default function App() {
   const editorRef = useRef<ExtendedWebView>(null!);
@@ -77,9 +78,8 @@ export default function App() {
     <View style={styles.wrapper}>
       <TextEditor
         autoSelect
-        webviewDebuggingEnabled
+        webviewDebuggingEnabled={__DEV__}
         ref={editorRef}
-        delayLongPress={1000}
         containerStyle={styles.container}
         placeholder="Type text here..."
         defaultStyles={defaultStyles}
@@ -97,15 +97,14 @@ export default function App() {
 
       <Toolbar
         horizontal
-        Icon={Icon}
-        dropdownIconProps={dropdownIconProps}
-        popoverProps={popoverProps}
-        tooltipProps={tooltipProps}
         editorRef={editorRef}
         data={state}
+        theme={theme}
         config={toolbarConfig}
         style={styles.toolbar}
-        ItemSeparatorComponent={Separator}
+        Icon={MaterialIcons as ToolbarProps['Icon']}
+        Item={ToolbarItem}
+        ItemSeparatorComponent={ToolbarSeparator}
       />
     </View>
   );
@@ -137,16 +136,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderTopWidth: 0,
   },
-  dropdownIcon: {
-    marginLeft: 4,
-  },
-  tooltip: {
-    borderWidth: 1,
-    padding: 4,
-    borderRadius: 4,
-    backgroundColor: '#ffffff',
-  },
-  popoverContainer: {
+  popover: {
     backgroundColor: '#ffffff',
     shadowColor: '#ccced1',
     shadowRadius: 5,
@@ -156,23 +146,21 @@ const styles = StyleSheet.create({
 
 const toolbarConfig = createConfig();
 
+const theme: ToolbarProps['theme'] = {
+  palette: {},
+  components: {
+    Icon: {
+      size: 20,
+    },
+    Popover: {
+      containerStyle: styles.popover,
+    },
+  },
+};
+
 const fontKey = Platform.select({
   web: 'MaterialIcons-Regular',
   default: 'MaterialIcons',
 });
 
-const Separator = () => <View style={styles.separator} />;
-const Icon = MaterialIcons as ToolbarProps['Icon'];
-
-const dropdownIconProps: ToolbarProps['dropdownIconProps'] = {
-  name: 'arrow-drop-down',
-  style: styles.dropdownIcon,
-};
-
-const popoverProps: ToolbarProps['popoverProps'] = {
-  containerStyle: styles.popoverContainer,
-};
-
-const tooltipProps: ToolbarProps['tooltipProps'] = {
-  style: styles.tooltip,
-};
+const ToolbarSeparator = () => <View style={styles.separator} />;

@@ -1,83 +1,65 @@
 import {
   FlatList,
+  Text,
   type FlatListProps,
   type ListRenderItem,
 } from 'react-native';
 import { ToolbarRenderer, type ToolbarRenderItem } from './toolbar-renderer';
 import type { CommandsInfo, ExtendedWebView } from '../../types';
-import { ToolbarContext } from './model/toolbar-context';
-import { memo, useMemo } from 'react';
-import { Icon as DefaultIcon } from './ui/icon';
-import { Popover as DefaultPopover } from './ui/popover';
-import { type StyleParams, StyleContext } from './model/style-context';
+import { memo } from 'react';
+import { ToolbarPopover } from './toolbar-popover';
+import {
+  type ToolbarStyleParams,
+  ToolbarStyleProvider,
+  type ToolbarTheme,
+} from './toolbar-style-provider';
+import { ToolbarItem } from './toolbar-item';
+import { ToolbarDataProvider } from './toolbar-data-provider';
 
 export interface ToolbarProps<T = CommandsInfo>
   extends Omit<FlatListProps<ToolbarRenderItem>, 'data' | 'renderItem'>,
-    Partial<StyleParams> {
+    Partial<ToolbarStyleParams> {
   data: T;
   config?: ToolbarRenderItem[];
   renderItem?: ListRenderItem<ToolbarRenderItem>;
   editorRef: React.RefObject<ExtendedWebView | null>;
 }
 
-const Toolbar = <T extends CommandsInfo>({
-  editorRef,
-  config,
-  data,
-  tintColor = 'rgb(0, 0, 0)',
-  activeTintColor = 'rgb(77, 77, 230)',
-  iconSize = 20,
-  renderItem = renderToolbarItem,
-  dropdownIconProps,
-  Icon = DefaultIcon,
-  Popover = DefaultPopover,
-  popoverProps,
-  tooltipProps,
-  ...props
-}: ToolbarProps<T>) => {
-  const { dispatch = noop, focus = noop } = editorRef?.current ?? {};
-
-  const styleSettings = useMemo(
-    () => ({
-      Icon,
-      Popover,
-      dropdownIconProps,
-      tintColor,
-      activeTintColor,
-      iconSize,
-      popoverProps,
-      tooltipProps,
-    }),
-    [
-      dropdownIconProps,
-      Icon,
-      Popover,
-      activeTintColor,
-      iconSize,
-      tooltipProps,
-      popoverProps,
-      tintColor,
-    ]
-  );
-
-  const dataSettings = useMemo(
-    () => ({ data, dispatch, focus: () => focus() }),
-    [data, dispatch, focus]
-  );
+const Toolbar = <T extends CommandsInfo>(props: ToolbarProps<T>) => {
+  const {
+    editorRef,
+    config,
+    data,
+    theme,
+    renderItem,
+    Icon,
+    Item,
+    Popover,
+    ...listProps
+  } = { ...defaultProps, ...props };
 
   return (
-    <StyleContext.Provider value={styleSettings}>
-      <ToolbarContext.Provider value={dataSettings}>
-        <FlatList {...props} data={config} renderItem={renderItem} />
-      </ToolbarContext.Provider>
-    </StyleContext.Provider>
+    <ToolbarStyleProvider
+      theme={theme}
+      Icon={Icon}
+      Item={Item}
+      Popover={Popover}
+    >
+      <ToolbarDataProvider {...editorRef.current!} data={data}>
+        <FlatList {...listProps} data={config} renderItem={renderItem} />
+      </ToolbarDataProvider>
+    </ToolbarStyleProvider>
   );
 };
 
-const noop = () => {};
-
-const renderToolbarItem: ListRenderItem<ToolbarRenderItem> = ({ item }) => (
-  <ToolbarRenderer {...item} />
-);
+const defaultProps = {
+  editorRef: { current: null },
+  theme: {} as ToolbarTheme,
+  data: {} as CommandsInfo,
+  renderItem: ({ item }) => <ToolbarRenderer {...item} />,
+  Icon: Text,
+  Item: ToolbarItem,
+  Popover: ToolbarPopover,
+} satisfies ToolbarProps;
 
 export default memo(Toolbar);

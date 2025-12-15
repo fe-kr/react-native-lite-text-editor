@@ -1,8 +1,7 @@
-import {
+import React, {
   Fragment,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -20,16 +19,17 @@ import {
   ScrollView,
   StatusBar,
   Animated,
-  BackHandler,
   Modal,
   type ModalProps,
   type ScrollViewProps,
 } from 'react-native';
-import type { Callback } from '../../../types';
+import type { Callback } from '../../types';
 
-export interface PopoverProps extends ModalProps {
+export interface ToolbarPopoverProps extends ModalProps {
   anchor: React.ReactNode;
   statusBarHeight?: number;
+  screenIndent?: number;
+  isRTL?: boolean;
   anchorPosition?: 'top' | 'bottom';
   enterAnimation?: Animated.TimingAnimationConfig;
   leaveAnimation?: Animated.TimingAnimationConfig;
@@ -41,30 +41,32 @@ export interface PopoverProps extends ModalProps {
   overlayStyle?: StyleProp<ViewStyle>;
 }
 
-export const Popover = ({
-  visible = false,
-  children,
-  anchor,
-  anchorPosition = 'top',
-  enterAnimation = defaultEnterAnimation,
-  leaveAnimation = defaultLeaveAnimation,
-  statusBarHeight = StatusBar.currentHeight ?? 0,
-  onShow,
-  onDismiss,
-  wrapperStyle,
-  containerStyle,
-  overlayStyle,
-  scrollableProps,
-  transparent = true,
-  ...props
-}: PopoverProps) => {
+export const ToolbarPopover = (props: ToolbarPopoverProps) => {
+  const {
+    visible,
+    children,
+    anchor,
+    anchorPosition,
+    enterAnimation,
+    leaveAnimation,
+    isRTL,
+    statusBarHeight,
+    screenIndent,
+    onShow,
+    onDismiss,
+    wrapperStyle,
+    containerStyle,
+    overlayStyle,
+    scrollableProps,
+    ...modalProps
+  } = { ...defaultProps, ...props };
+
   const anchorRef = useRef<React.ComponentRef<View>>(null!);
   const menuRef = useRef<React.ComponentRef<View> | null>(null);
   const opacityRef = useRef(new Animated.Value(0));
   const keyboardHeightRef = useRef(0);
   const prevIsOpenRef = useRef(false);
   const prevVisible = useRef(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [isOpen, setIsOpen] = useState(visible);
   const [menuLayout, setMenuLayout] = useState<LayoutRectangle>(defaultLayout);
@@ -75,31 +77,18 @@ export const Popover = ({
     ...Dimensions.get('window'),
   }));
 
-  const addEventListeners = useCallback(() => {
-    abortControllerRef.current = new AbortController();
+  const measureInWindow = useCallback(
+    (ref: React.RefObject<React.ComponentRef<View> | null>) => {
+      const { promise, resolve } = Promise.withResolvers<LayoutRectangle>();
 
-    const backPressListener = BackHandler.addEventListener(
-      'hardwareBackPress',
-      () => visible && !!onDismiss?.()
-    );
-    const dimensionsChangeListener = Dimensions.addEventListener(
-      'change',
-      () => visible && !!onDismiss?.()
-    );
-
-    abortControllerRef.current.signal.addEventListener('abort', () => {
-      backPressListener.remove();
-      dimensionsChangeListener.remove();
-    });
-
-    if (Platform.OS === 'web') {
-      document.addEventListener(
-        'keyup',
-        (e) => e.key === 'Escape' && onDismiss?.(),
-        { signal: abortControllerRef.current.signal }
+      ref.current?.measureInWindow((x, y, width, height) =>
+        resolve({ x, y, width, height })
       );
-    }
-  }, [onDismiss, visible]);
+
+      return promise;
+    },
+    []
+  );
 
   const open = useCallback(async () => {
     const [windowLayoutResult, menuLayoutResult, anchorLayoutResult] =
@@ -132,7 +121,6 @@ export const Popover = ({
       height: windowLayoutResult.height - keyboardHeightRef.current,
     });
 
-    addEventListeners();
     Animated.timing(opacityRef.current, enterAnimation).start(
       ({ finished }) => {
         if (finished) {
@@ -142,11 +130,9 @@ export const Popover = ({
     );
 
     onShow?.();
-  }, [addEventListeners, enterAnimation, onShow]);
+  }, [enterAnimation, measureInWindow, onShow]);
 
   const close = useCallback(() => {
-    abortControllerRef.current?.abort();
-
     Animated.timing(opacityRef.current, leaveAnimation).start(
       ({ finished }) => {
         if (finished) {
@@ -156,8 +142,6 @@ export const Popover = ({
         }
       }
     );
-
-    abortControllerRef.current = null;
 
     onDismiss?.();
   }, [leaveAnimation, onDismiss]);
@@ -184,89 +168,73 @@ export const Popover = ({
       ? anchorLayout.y + anchorLayout.height
       : anchorLayout.y - anchorLayout.height;
 
-  const left = useMemo(() => {
-    const windowOffsetX = windowLayout.width - menuLayout.width - SCREEN_INDENT;
+  const left = (() => {
+    const windowOffsetX = windowLayout.width - menuLayout.width - screenIndent;
     const anchorOffsetX = anchorLayout.x + anchorLayout.width;
 
     if (anchorLayout.x <= windowOffsetX) {
-      return Math.max(anchorLayout.x, SCREEN_INDENT);
+      return Math.max(anchorLayout.x, screenIndent);
     }
 
-    if (anchorOffsetX > windowLayout.width - SCREEN_INDENT) {
+    if (anchorOffsetX > windowLayout.width - screenIndent) {
       return windowOffsetX;
     }
 
     return anchorOffsetX - menuLayout.width;
-  }, [anchorLayout, menuLayout, windowLayout]);
+  })();
 
-  const menuScrollHeight = useMemo(() => {
+  const menuScrollHeight = (() => {
     let menuHeight = 0;
 
     const windowOffsetY =
-      windowLayout.height - menuLayout.height - SCREEN_INDENT - statusBarHeight;
+      windowLayout.height - menuLayout.height - screenIndent - statusBarHeight;
 
     if (
       anchorTop >= windowOffsetY &&
       anchorTop <= windowLayout.height - anchorTop
     ) {
       menuHeight =
-        windowLayout.height - anchorTop - SCREEN_INDENT - statusBarHeight;
+        windowLayout.height - anchorTop - screenIndent - statusBarHeight;
     }
 
     if (
       anchorTop >= windowOffsetY &&
       anchorTop >= windowLayout.height - anchorTop &&
       anchorTop <=
-        menuLayout.height -
-          anchorLayout.height +
-          SCREEN_INDENT -
-          statusBarHeight
+        menuLayout.height - anchorLayout.height + screenIndent - statusBarHeight
     ) {
       menuHeight =
-        anchorTop + anchorLayout.height - SCREEN_INDENT + statusBarHeight;
+        anchorTop + anchorLayout.height - screenIndent + statusBarHeight;
     }
 
-    return Math.min(menuHeight, windowLayout.height - 2 * SCREEN_INDENT);
-  }, [
-    windowLayout.height,
-    menuLayout.height,
-    statusBarHeight,
-    anchorTop,
-    anchorLayout.height,
-  ]);
+    return Math.min(menuHeight, windowLayout.height - 2 * screenIndent);
+  })();
 
-  const top = useMemo(() => {
+  const top = (() => {
     const windowOffsetY =
-      windowLayout.height - menuLayout.height - SCREEN_INDENT - statusBarHeight;
+      windowLayout.height - menuLayout.height - screenIndent - statusBarHeight;
 
     if (
       anchorTop <= windowOffsetY ||
       (anchorTop >= windowOffsetY &&
         anchorTop <= windowLayout.height - anchorTop)
     ) {
-      return Math.max(anchorTop, SCREEN_INDENT);
+      return Math.max(anchorTop, screenIndent);
     }
 
     if (
       anchorTop + anchorLayout.height + statusBarHeight >
-      windowLayout.height - SCREEN_INDENT
+      windowLayout.height - screenIndent
     ) {
-      return menuScrollHeight === windowLayout.height - 2 * SCREEN_INDENT
-        ? -SCREEN_INDENT * 2
+      return menuScrollHeight === windowLayout.height - 2 * screenIndent
+        ? -screenIndent * 2
         : windowOffsetY;
     }
 
     return (
       anchorTop + anchorLayout.height - (menuScrollHeight || menuLayout.height)
     );
-  }, [
-    anchorLayout.height,
-    anchorTop,
-    statusBarHeight,
-    menuLayout.height,
-    menuScrollHeight,
-    windowLayout.height,
-  ]);
+  })();
 
   useEffect(() => {
     const opacityAnimation = opacityRef.current;
@@ -280,7 +248,6 @@ export const Popover = ({
     );
 
     return () => {
-      abortControllerRef.current?.abort();
       opacityAnimation.removeAllListeners();
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -309,7 +276,7 @@ export const Popover = ({
     >
       {anchor}
 
-      <Modal {...props} transparent={transparent} visible={isOpen}>
+      <Modal {...modalProps} visible={isOpen}>
         <Pressable style={[styles.overlay, overlayStyle]} onPress={close}>
           <Animated.View
             ref={menuRef}
@@ -323,7 +290,7 @@ export const Popover = ({
               styles.containerStyle,
               containerStyle,
             ]}
-            pointerEvents={visible ? 'box-none' : 'none'}
+            pointerEvents={isOpen ? 'box-none' : 'none'}
             collapsable={false}
           >
             <ContentWrapper
@@ -341,9 +308,21 @@ export const Popover = ({
   );
 };
 
-const SCREEN_INDENT = 8;
+export const usePopover = () => {
+  const [state, setState] = useState<Record<string, boolean>>({});
 
-const { isRTL } = I18nManager.getConstants();
+  return {
+    isOpen: useCallback((id: string) => !!state[id], [state]),
+    open: useCallback(
+      (id: string) => setState((prevState) => ({ ...prevState, [id]: true })),
+      []
+    ),
+    close: useCallback(
+      (id: string) => setState((prevState) => ({ ...prevState, [id]: false })),
+      []
+    ),
+  };
+};
 
 const defaultLayout = {
   x: 0,
@@ -352,26 +331,24 @@ const defaultLayout = {
   height: 0,
 } as const;
 
-const defaultEnterAnimation = {
-  toValue: 1,
-  duration: 150,
-  useNativeDriver: true,
-} as const;
-
-const defaultLeaveAnimation = {
-  toValue: 0,
-  duration: 150,
-  useNativeDriver: true,
-} as const;
-
-const measureInWindow = <T extends React.ComponentRef<View>>({
-  current,
-}: React.RefObject<T | null>): Promise<LayoutRectangle> =>
-  new Promise((res) => {
-    current?.measureInWindow((x, y, width, height) =>
-      res({ x, y, width, height })
-    );
-  });
+const defaultProps = {
+  visible: false,
+  isRTL: I18nManager.getConstants().isRTL,
+  anchorPosition: 'top',
+  enterAnimation: {
+    toValue: 1,
+    duration: 150,
+    useNativeDriver: true,
+  },
+  leaveAnimation: {
+    toValue: 0,
+    duration: 150,
+    useNativeDriver: true,
+  },
+  statusBarHeight: StatusBar.currentHeight ?? 0,
+  screenIndent: 8,
+  transparent: true,
+} satisfies Partial<ToolbarPopoverProps>;
 
 const styles = StyleSheet.create({
   wrapperStyle: {

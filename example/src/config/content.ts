@@ -78,7 +78,7 @@ export const content = `
   <section class="block">
     <div class="label">Images</div>
     <p>
-      <img src="./example.jpg" alt="Placeholder" />
+      <img src="https://avatars.githubusercontent.com/u/166660204?v=4&size=128" alt="Placeholder" />
     </p>
   </section>
 `;

@@ -1,6 +1,8 @@
 # React Native Lite Text Editor
+[![npm version](https://img.shields.io/npm/v/react-native-lite-text-editor.svg)](https://www.npmjs.com/package/react-native-lite-text-editor)
+![Static Badge](https://img.shields.io/badge/github-preview-green?logo=github&link=https%3A%2F%2Ffe-kr.github.io%2Freact-native-lite-text-editor)
 
-A lightweight, embeddable rich text editor for React Native built on a WebView (no additional dependencies).
+A lightweight, embeddable rich text editor for React Native built on a WebView.
 
 ## Installation
 
@@ -9,7 +11,7 @@ npm install react-native-lite-text-editor
 # or
 yarn add react-native-lite-text-editor
 ```
-_Requires react-native-webview as a peer dependency_
+_Requires **react-native-webview** as a peer dependency_
 
 ## Usage
 
@@ -42,13 +44,15 @@ export default function App() {
 
 ```
 
+
+
 ## API Overview
 
 ### TextEditor Props (extends `WebViewProps`)
 
 | **Prop** | **Type** | **Default** | **Description** | **Notes** |
 |---|---:|---:|---|---|
-| **autoCapitalize** | `'none'` \| `'sentences'` \| `'words'` \| `'characters'` \| `undefined` |  `none` | Controls automatic capitalization for typed text. | Passed through to input handling inside the WebView. |
+| **autoCapitalize** | `'none'` \| `'sentences'` \| `'words'` \| `'characters'` |  `none` | Controls automatic capitalization for typed text. | Passed through to input handling inside the WebView. |
 | **autoCorrect** | `'on' \| 'off'` | `'off'` | Enables or disables platform autocorrect suggestions. | Affects virtual keyboard behavior. |
 | **autoFocus** | `'start' \| 'end'` | `-` | Focuses editor on mount and places caret at start or end. | Useful for immediate editing flows. |
 | **contentEditable** | `boolean` | `true` | Toggles whether the editor is editable or read-only. | |
@@ -81,7 +85,7 @@ export default function App() {
 | **data** | `CommandsInfo[]` | `-` | Array of command info objects used to render toolbar items. ||
 | **config** | `ToolbarRenderItem[]` | `-` | Config for render toolbar. Includes items like `'container'`, `'icon'`, `'color'`, `'text'`, `'custom'`. ||
 | **renderItem** | `ListRenderItem<ToolbarRenderItem>` | internal renderer | Custom renderer for toolbar cells; receives config item. | |
-| **editorRef** | `ExtendedWebViewRef` | required | Reference used to send commands to the editor. ||
+| **editorRef** | `ExtendedWebViewRef` | `-` | Reference used to send commands to the editor. ||
 | **tintColor** | `string` | `rgb(0, 0, 0)` | Color used for inactive icons and text in the toolbar. |
 | **activeTintColor** | `string` | `rgb(77, 77, 230)` | Color used for active/selected icons and labels. |
 | **iconSize** | `number` | `20` | Size in pixels for toolbar icons. |

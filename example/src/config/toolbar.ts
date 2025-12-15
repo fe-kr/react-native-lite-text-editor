@@ -3,8 +3,6 @@ import { createElement } from 'react';
 import {
   actions,
   DocumentCommandId,
-  ToolbarForm,
-  withToolbar,
   type HTMLElementTag,
   type ToolbarRenderItem,
   type CustomToolbarItem,
@@ -16,6 +14,7 @@ import {
   fontSizeOptions,
   headingOptions,
 } from './options';
+import { FormInput } from '../components/form-input';
 
 const fields = {
   undo: {
@@ -209,30 +208,28 @@ const fields = {
   createLink: {
     id: DocumentCommandId.CREATE_LINK,
     type: 'custom',
-    Component: withToolbar<CustomToolbarItem>(({ dispatch, onClose }) =>
-      createElement(ToolbarForm, {
-        iconName: 'check',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        icon: 'check',
         placeholder: 'Type link href...',
-        onSubmit: (value) => {
+        onSubmit: ({ dispatch, value }) => {
           dispatch(actions.createLink(value));
           onClose?.();
         },
-      })
-    ),
+      }),
   },
   insertImage: {
     id: DocumentCommandId.INSERT_IMAGE,
     type: 'custom',
-    Component: withToolbar<CustomToolbarItem>(({ dispatch, onClose }) =>
-      createElement(ToolbarForm, {
-        iconName: 'check',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        icon: 'check',
         placeholder: 'Type image URL...',
-        onSubmit: (value) => {
+        onSubmit: ({ dispatch, value }) => {
           dispatch(actions.insertImage(value));
           onClose?.();
         },
-      })
-    ),
+      }),
   },
 } as const;
 
@@ -242,7 +239,9 @@ export const createConfig = (): ToolbarRenderItem[] => [
     items: [fields.undo, fields.redo],
   },
   {
+    id: `${DocumentCommandId.FORMAT_BLOCK}.heading`,
     type: 'text',
+    role: 'menu',
     defaultValue: 'p',
     title: 'Heading',
     containerStyle: styles.textContainer,
@@ -264,27 +263,35 @@ export const createConfig = (): ToolbarRenderItem[] => [
     type: 'container',
     items: [
       {
+        id: DocumentCommandId.FONT_SIZE,
         type: 'icon',
+        role: 'menu',
         title: 'Font size',
         value: 'format-size',
         items: fontSizeOptions.map(fields.fontSize),
       },
       {
+        id: DocumentCommandId.FONT_NAME,
         type: 'icon',
+        role: 'menu',
         title: 'Font family',
         value: 'font-download',
         containerStyle: styles.textContainer,
         items: fontNameOptions.map(fields.fontName),
       },
       {
+        id: DocumentCommandId.FORE_COLOR,
         type: 'icon',
+        role: 'menu',
         title: 'Font color',
         value: 'format-color-text',
         containerStyle: styles.paletteContainer,
         items: colorOptions.map(fields.foreColor),
       },
       {
+        id: DocumentCommandId.BACK_COLOR,
         type: 'icon',
+        role: 'menu',
         title: 'Font background color',
         value: 'format-color-fill',
         containerStyle: styles.paletteContainer,
@@ -310,7 +317,9 @@ export const createConfig = (): ToolbarRenderItem[] => [
       fields.indent,
       fields.outdent,
       {
+        id: 'justifyText',
         type: 'icon',
+        role: 'menu',
         title: 'Text alignment',
         closeable: true,
         defaultValue: fields.justifyLeft.value,
@@ -327,12 +336,14 @@ export const createConfig = (): ToolbarRenderItem[] => [
     type: 'container',
     items: [
       {
+        id: DocumentCommandId.CREATE_LINK,
         type: 'icon',
         value: 'link',
         closeable: true,
         items: [fields.createLink],
       },
       {
+        id: DocumentCommandId.INSERT_IMAGE,
         type: 'icon',
         value: 'insert-photo',
         closeable: true,

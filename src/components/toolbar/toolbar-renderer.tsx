@@ -1,8 +1,8 @@
 import { Platform, StyleSheet, View } from 'react-native';
-import { useToolbar } from './model/toolbar-context';
 import type { Action, Callback, CommandsInfo } from '../../types';
-import { ToolbarAccordion } from './toolbar-accordion';
-import { ToolbarItem, type ToolbarItemProps } from './toolbar-item';
+import { type ToolbarItemProps } from './toolbar-item';
+import { useToolbarStyle } from './toolbar-style-provider';
+import { useToolbarData } from './toolbar-data-provider';
 
 export interface CustomToolbarItem {
   id?: string;
@@ -38,73 +38,83 @@ export type ToolbarRenderItem =
   | NestedToolbarItem;
 
 export const ToolbarRenderer = (props: ToolbarRenderItem) => {
-  const { dispatch, focus, data } = useToolbar();
+  const { dispatch, focus, data, popover } = useToolbarData();
+  const { theme, Item, Popover } = useToolbarStyle();
 
-  if (isCustomItem(props)) {
+  if (ItemHelpers.isCustom(props)) {
     const { Component, ...restProps } = props;
 
     return !!Component && <Component {...restProps} />;
   }
 
-  if (isContainerItem(props)) {
+  if (ItemHelpers.isContainer(props)) {
     const { items, containerStyle, onClose } = props;
 
     return (
       <View style={[styles.rowContainer, containerStyle]}>
         {items?.map((item, i) => (
-          <ToolbarRenderer onClose={onClose} {...item} key={i} />
+          <ToolbarRenderer onClose={onClose} {...item} key={item.id ?? i} />
         ))}
       </View>
     );
   }
 
-  if (isNestedItem(props)) {
-    const { type, name, value, items, defaultValue, closeable, ...restProps } =
-      props;
+  if (ItemHelpers.isNested(props)) {
+    const { id, items, defaultValue, closeable, ...restProps } = props;
 
-    const option = isNil(value)
+    const option = !restProps.value
       ? items.find(
-          (item) => 'action' in item && getIsActiveAction(data, item.action)
+          (i) =>
+            ItemHelpers.isDefault(i) && ItemHelpers.isActive(data, i.action)
         )
       : null;
 
-    const defaultOption = !isNil(defaultValue)
-      ? items.find((item) => 'value' in item && item.value === defaultValue)
+    const defaultOption = defaultValue
+      ? items.find((i) => ItemHelpers.isDefault(i) && i.value === defaultValue)
       : null;
 
-    const selectedOption = (option ??
-      defaultOption) as DefaultToolbarItem | null;
-    const selectable = !isNil(defaultValue && selectedOption?.id);
+    const selectedOption = option ?? defaultOption;
+    const selectable = !!(defaultValue && selectedOption?.id);
+
+    const isOpen = popover.isOpen(id);
 
     return (
-      <ToolbarAccordion
-        {...restProps}
-        type={type}
-        name={name ?? selectedOption?.name}
-        value={value ?? selectedOption?.value}
+      <Popover
+        {...theme.components.Popover}
+        visible={isOpen}
+        onDismiss={() => popover.close(id)}
+        anchor={
+          <Item
+            {...restProps}
+            {...(selectedOption as DefaultToolbarItem | null)}
+            id={id}
+            selected={isOpen}
+            onPress={() => popover.open(id)}
+          />
+        }
         onShow={Platform.OS === 'web' ? focus : undefined}
       >
-        {({ close }) =>
-          items.map((item, index) => (
-            <ToolbarRenderer
-              {...item}
-              {...(selectable && { selected: item.id === selectedOption?.id })}
-              onClose={closeable ? close : undefined}
-              key={item.id ?? index}
-            />
-          ))
-        }
-      </ToolbarAccordion>
+        {items.map((item, index) => (
+          <ToolbarRenderer
+            {...item}
+            {...(selectable && {
+              selected: item.id === selectedOption?.id,
+            })}
+            onClose={closeable ? () => popover.close(id) : undefined}
+            key={item.id ?? index}
+          />
+        ))}
+      </Popover>
     );
   }
 
   const { action, onClose, onPress, ...restProps } = props;
 
   return (
-    <ToolbarItem
+    <Item
       {...restProps}
-      disabled={restProps.disabled ?? !getIsEnabledAction(data, action)}
-      selected={restProps.selected ?? getIsActiveAction(data, action)}
+      disabled={restProps.disabled ?? !ItemHelpers.isEnabled(data, action)}
+      selected={restProps.selected ?? ItemHelpers.isActive(data, action)}
       onPress={(e) => {
         if (action?.meta?.showKeyboard ?? Platform.OS === 'web') {
           focus();
@@ -121,39 +131,43 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
   );
 };
 
-const isContainerItem = (item: object): item is ContainerToolbarItem => {
-  return 'type' in item && item.type === 'container';
-};
+export class ItemHelpers {
+  static isItem = <T extends { type: string }>(item: object): item is T => {
+    return 'type' in item && typeof item.type === 'string';
+  };
 
-const isCustomItem = (item: object): item is CustomToolbarItem => {
-  return 'type' in item && item.type === 'custom';
-};
+  static isContainer = (item: object): item is ContainerToolbarItem => {
+    return ItemHelpers.isItem(item) && item.type === 'container';
+  };
 
-const isNestedItem = (item: object): item is NestedToolbarItem => {
-  return 'items' in item && !isContainerItem(item);
-};
+  static isCustom = (item: object): item is CustomToolbarItem => {
+    return ItemHelpers.isItem(item) && item.type === 'custom';
+  };
 
-const isBoolean = (value: unknown) => {
-  return typeof value === 'boolean';
-};
+  static isDefault = (item: object): item is DefaultToolbarItem => {
+    return (
+      ItemHelpers.isItem(item) && ['icon', 'color', 'text'].includes(item.type)
+    );
+  };
 
-const isNil = (value: unknown) => {
-  return value === null || value === undefined;
-};
+  static isNested = (item: object): item is NestedToolbarItem => {
+    return 'items' in item && !ItemHelpers.isContainer(item);
+  };
 
-const getIsActiveAction = (data?: CommandsInfo, action?: Action) => {
-  if (!action || !data || !data[action.type]) return false;
+  static isActive = (data?: CommandsInfo, action?: Action | null) => {
+    if (!action || !data || !data[action.type]) return false;
 
-  const { state } = data[action.type]!;
+    const { state } = data[action.type]!;
 
-  return isBoolean(state) ? state : state === action.payload;
-};
+    return typeof state === 'boolean' ? state : state === action.payload;
+  };
 
-const getIsEnabledAction = (data?: CommandsInfo, action?: Action) => {
-  const { enabled } = data && action ? data[action.type] ?? {} : {};
+  static isEnabled = (data?: CommandsInfo, action?: Action) => {
+    const { enabled } = data && action ? data[action.type] ?? {} : {};
 
-  return isBoolean(enabled) && enabled;
-};
+    return typeof enabled === 'boolean' && enabled;
+  };
+}
 
 const styles = StyleSheet.create({
   rowContainer: {

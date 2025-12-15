@@ -8,11 +8,18 @@ import {
   useRef,
   useState,
 } from 'react';
-import { setAttribute, focus, select, insertStyle } from '../../config/actions';
+import {
+  setAttribute,
+  focus as focusAction,
+  select,
+  insertStyle,
+} from '../../config/actions';
 import type {
   Action,
+  Callback,
   DocumentCommandId,
   EditorEvent as EditorEventType,
+  EditorTransferObject,
   Event,
   EventData,
   EventMessage,
@@ -31,7 +38,6 @@ import type {
   WebViewNavigation,
   WebViewProps,
 } from 'react-native-webview';
-import { createEvent, isActionLike, GlobalVars } from './text-editor-lib';
 import { Container } from './text-editor-container';
 
 export interface TextEditorProps
@@ -99,24 +105,28 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     const containerRef = useRef<React.ComponentRef<typeof View>>(null);
 
     const [webViewSource] = useState(() => {
-      const globalVars = new GlobalVars()
-        .set('platform', Platform.OS)
-        .set('commands', commands)
-        .set('extraCommands', `[${extraCommands}]`, false)
-        .set('delayLongPress', delayLongPress)
-        .set('listeners', {
-          [EditorEvent.BLUR]: !!onBlur,
-          [EditorEvent.CHANGE]: !!onChange,
-          [EditorEvent.FOCUS]: !!onFocus,
-          [EditorEvent.INPUT]: !!onInput,
-          [EditorEvent.KEY_DOWN]: !!onKeyDown,
-          [EditorEvent.KEY_UP]: !!onKeyUp,
-          [EditorEvent.PASTE]: !!onPaste,
-          [EditorEvent.PRESS]: !!onPress,
-          [EditorEvent.LONG_PRESS]: !!onLongPress,
-          [EditorEvent.SELECT]: !!onSelectionChange,
-        })
-        .build();
+      const globalVars = stringifyObject(
+        {
+          platform: Platform.OS,
+          commands,
+          delayLongPress,
+          extraCommands,
+          listeners: {
+            [EditorEvent.BLUR]: !!onBlur,
+            [EditorEvent.CHANGE]: !!onChange,
+            [EditorEvent.FOCUS]: !!onFocus,
+            [EditorEvent.INPUT]: !!onInput,
+            [EditorEvent.KEY_DOWN]: !!onKeyDown,
+            [EditorEvent.KEY_UP]: !!onKeyUp,
+            [EditorEvent.PASTE]: !!onPaste,
+            [EditorEvent.PRESS]: !!onPress,
+            [EditorEvent.LONG_PRESS]: !!onLongPress,
+            [EditorEvent.SELECT]: !!onSelectionChange,
+          },
+        } satisfies EditorTransferObject,
+        (key, value) =>
+          key === 'extraCommands' ? `[${value}]` : JSON.stringify(value)
+      );
 
       return {
         html: createHtml({ styles, defaultStyles, globalVars, content }),
@@ -135,21 +145,19 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       [autoCapitalize, autoCorrect, contentEditable, enterKeyHint, placeholder]
     );
 
-    const isReady = useCallback(() => readyRef.current, []);
-
     const dispatch = useCallback((data: Action) => {
       const message = JSON.stringify(data);
 
       ref.current?.postMessage(message);
     }, []);
 
-    const focusEditor = useCallback(
-      (position: 'start' | 'end') => {
+    const focus = useCallback(
+      (position?: 'start' | 'end') => {
         containerRef.current?.focus();
 
         ref.current?.requestFocus();
 
-        dispatch(focus(position));
+        dispatch(focusAction(position!));
       },
       [dispatch]
     );
@@ -169,9 +177,15 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
 
         dispatch(setAttribute(attributes));
 
-        if (autoFocus && contentEditable) focusEditor(autoFocus);
+        if (contentEditable) {
+          if (autoFocus) {
+            focus(autoFocus);
+          }
 
-        if (autoSelect) dispatch(select);
+          if (autoSelect) {
+            dispatch(select);
+          }
+        }
 
         onLoad?.(e);
       },
@@ -180,7 +194,7 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
         attributes,
         autoFocus,
         contentEditable,
-        focusEditor,
+        focus,
         autoSelect,
         onLoad,
       ]
@@ -189,12 +203,14 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     const onWebViewMessage = useCallback(
       (e: WebViewMessageEvent) => {
         try {
-          const action = JSON.parse(e.nativeEvent.data);
+          const data = JSON.parse(e.nativeEvent.data);
 
-          if (!isActionLike<EventMessage<EditorEventType>>(action)) {
+          if (!(data && typeof data === 'object' && 'type' in data)) {
             onMessage?.(e);
             return;
           }
+
+          const action = data as EventMessage<EditorEventType>;
 
           switch (action.type) {
             case EditorEvent.SELECT: {
@@ -252,7 +268,9 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
               break;
             }
           }
-        } catch {}
+        } catch {
+          onMessage?.(e);
+        }
       },
       [
         onMessage,
@@ -271,32 +289,27 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
 
     useImperativeHandle(
       outerRef,
-      () =>
-        ({
-          ...ref.current,
-          dispatch,
-          focus: focusEditor,
-        } as ExtendedWebView),
-      [dispatch, focusEditor]
+      () => ({ ...ref.current, dispatch, focus } as ExtendedWebView),
+      [dispatch, focus]
     );
 
     useEffect(() => {
-      if (!isReady()) return;
+      if (!readyRef.current) return;
 
       dispatch(insertStyle(styles!));
-    }, [dispatch, isReady, styles]);
+    }, [dispatch, styles]);
 
     useEffect(() => {
-      if (!isReady()) return;
+      if (!readyRef.current) return;
 
       dispatch(setAttribute(attributes));
-    }, [dispatch, isReady, attributes]);
+    }, [dispatch, attributes]);
 
     useEffect(() => {
-      if (!isReady()) return;
+      if (!readyRef.current) return;
 
       dispatch(setAttribute({ innerHTML: content }));
-    }, [dispatch, isReady, content]);
+    }, [dispatch, content]);
 
     return (
       <Container ref={containerRef}>
@@ -312,6 +325,22 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
     );
   }
 );
+
+const createEvent = <T extends EditorEventType>(e: EventMessage<any>) =>
+  ({
+    type: e.type,
+    timeStamp: Date.now(),
+    nativeEvent: e.payload,
+  } as Event<EventData[T]>);
+
+const stringifyObject = <T extends object, C extends Callback>(
+  data: T,
+  callback: C
+) =>
+  `{${Object.entries(data).reduce(
+    (acc, [key, value]) => acc.concat(`${key}: ${callback(key, value)},`),
+    ''
+  )}}`;
 
 const defaultProps = {
   // Editor

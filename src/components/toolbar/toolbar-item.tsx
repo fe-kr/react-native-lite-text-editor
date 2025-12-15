@@ -4,80 +4,101 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  View,
+  type PressableStateCallbackType,
+  Pressable,
+  type PressableProps,
+  type TextProps,
+  type ViewProps,
 } from 'react-native';
-import { Button, type ButtonProps } from './ui/button';
-import { Color } from './ui/color';
-import { useStyle } from './model/style-context';
-import { Tooltip } from './ui/tooltip';
-import { useCallback, useState } from 'react';
+import { useToolbarStyle } from './toolbar-style-provider';
+import { useCallback } from 'react';
 
-export interface ToolbarItemProps extends ButtonProps {
-  type?: 'icon' | 'text' | 'color';
+export interface ToolbarItemProps extends PressableProps {
+  id: string;
+  type: 'icon' | 'text' | 'color';
   title?: string;
   name?: string;
   value?: string;
   disabled?: boolean;
   selected?: boolean;
+  children?: React.ReactNode;
   style?: StyleProp<ViewStyle | TextStyle>;
-  containerStyle?: ButtonProps['style'];
+  innerProps?: TextProps | ViewProps;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const ToolbarItem = ({
   type,
-  title,
   selected,
   name,
   containerStyle,
   value,
   style,
+  disabled,
   children,
+  innerProps,
   ...props
 }: ToolbarItemProps) => {
-  const {
-    Icon,
-    iconSize: size,
-    Popover,
-    tooltipProps,
-    activeTintColor,
-    tintColor,
-  } = useStyle();
-  const [isOpen, setIsOpen] = useState(false);
+  const { Icon, theme } = useToolbarStyle();
 
-  const color = selected ? activeTintColor : tintColor;
-  const borderColor = selected ? activeTintColor : undefined;
+  const color = selected
+    ? theme.palette.selectedTintColor
+    : theme.palette.tintColor;
+  const borderColor = selected ? theme.palette.selectedTintColor : undefined;
+  const { size } = theme.components.Icon ?? {};
 
-  const onClose = useCallback(() => setIsOpen(false), []);
-  const onOpen = useCallback(() => setIsOpen(true), []);
+  const createStyle = useCallback(
+    ({ pressed }: PressableStateCallbackType) => [
+      pressed && !disabled && { opacity: theme.palette.activeOpacity },
+      disabled && { opacity: theme.palette.disabledOpacity },
+      styles.container,
+      ...(type === 'color' ? [styles.colorContainer, { borderColor }] : []),
+      containerStyle,
+    ],
+    [
+      disabled,
+      theme.palette.activeOpacity,
+      theme.palette.disabledOpacity,
+      type,
+      borderColor,
+      containerStyle,
+    ]
+  );
 
   return (
-    <Tooltip
-      {...tooltipProps}
-      visible={isOpen}
-      Component={Popover}
-      onDismiss={onClose}
-      title={title}
-    >
-      <Button
-        {...props}
-        onLongPress={onOpen}
-        style={[styles.container, containerStyle]}
-      >
-        {type === 'icon' && <Icon name={value!} size={size} color={color} />}
+    <Pressable {...props} disabled={disabled} style={createStyle}>
+      {type === 'icon' && !!value && (
+        <Icon
+          {...(innerProps as object)}
+          size={size}
+          name={value}
+          color={color}
+        />
+      )}
 
-        {type === 'color' && (
-          <Color
-            style={style}
-            color={value}
-            size={size}
-            containerStyle={{ borderColor }}
-          />
-        )}
+      {type === 'color' && (
+        <View
+          {...(innerProps as object)}
+          style={[
+            {
+              width: size,
+              height: size,
+              backgroundColor: value,
+            },
+            style,
+          ]}
+        />
+      )}
 
-        {type === 'text' && <Text style={[{ color }, style]}>{name}</Text>}
+      {type === 'text' && (
+        <Text {...(innerProps as object)} style={[{ color }, style]}>
+          {name}
+        </Text>
+      )}
 
-        {children}
-      </Button>
-    </Tooltip>
+      {children}
+    </Pressable>
   );
 };
 
@@ -86,5 +107,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 4,
+  },
+  colorContainer: {
+    borderWidth: 2,
+    borderColor: 'transparent',
+    padding: 1,
   },
 });

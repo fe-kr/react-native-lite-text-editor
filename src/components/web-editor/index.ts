@@ -9,7 +9,7 @@ export default ({
   defaultStyles +
   "\n\n      * {\n        outline: none;\n        box-sizing: border-box;\n      }\n      html,\n      body {\n        margin: 0;\n        padding: 0;\n        height: 100%;\n      }\n\n      .rnlte-root {\n        font-family: system-ui;\n        overflow-y: auto;\n        padding: 1rem;\n        width: 100%;\n        height: 100%;\n      }\n\n      .rnlte-root[placeholder]:empty::before {\n        content: attr(placeholder);\n      }\n\n      .rnlte-root[placeholder]:empty:focus::before {\n        content: '';\n      }\n\n      .rnlte-root[contenteditable='false'] {\n        pointer-events: none;\n      }\n    </style>\n\n    <style id=\"rnlte-style\">\n      " +
   styles +
-  '\n    </style>\n\n    <script>\n      ' +
+  '\n    </style>\n\n    <script>\n        window.RNLTE = ' +
   globalVars +
   '\n    </script>\n  </head>\n\n  <body>\n    <div id="rnlte-root" class="rnlte-root">' +
   content +
