@@ -1,0 +1,483 @@
+import { StyleSheet } from 'react-native';
+import { createElement } from 'react';
+import {
+  actions,
+  DocumentCommandId,
+  type HTMLElementTag,
+  type ToolbarRenderItem,
+  type CustomToolbarItem,
+} from 'react-native-lite-text-editor';
+import {
+  type Option,
+  colorOptions,
+  fontNameOptions,
+  fontSizeOptions,
+  headingOptions,
+} from './options';
+import { FormInput } from '../components/form-input';
+
+const fields = {
+  undo: {
+    id: DocumentCommandId.UNDO,
+    type: 'icon',
+    title: 'Undo',
+    value: 'undo',
+    action: actions.undo,
+  },
+  redo: {
+    id: DocumentCommandId.REDO,
+    type: 'icon',
+    title: 'Redo',
+    value: 'redo',
+    action: actions.redo,
+  },
+  copy: {
+    id: DocumentCommandId.COPY,
+    type: 'icon',
+    title: 'Copy',
+    value: 'content-copy',
+    action: actions.copy,
+  },
+  cut: {
+    id: DocumentCommandId.CUT,
+    type: 'icon',
+    title: 'Cut',
+    value: 'content-cut',
+    action: actions.cut,
+  },
+  selectAll: {
+    id: DocumentCommandId.SELECT_ALL,
+    type: 'icon',
+    title: 'Select All',
+    value: 'select-all',
+    action: actions.selectAll,
+  },
+  delete: {
+    id: DocumentCommandId.DELETE,
+    type: 'icon',
+    title: 'Delete',
+    value: 'delete',
+    action: actions.remove,
+  },
+  forwardDelete: {
+    id: DocumentCommandId.FORWARD_DELETE,
+    type: 'icon',
+    title: 'Forward Delete',
+    value: 'keyboard-backspace',
+    action: actions.forwardDelete,
+  },
+  heading: ({ name, value }: Option<HTMLElementTag>) => ({
+    id: `${DocumentCommandId.FORMAT_BLOCK}.${value}`,
+    type: 'text' as const,
+    name,
+    value,
+    action: actions.formatBlock(value),
+  }),
+  bold: {
+    id: DocumentCommandId.BOLD,
+    type: 'icon',
+    title: 'Bold',
+    value: 'format-bold',
+    action: actions.bold,
+  },
+  italic: {
+    id: DocumentCommandId.ITALIC,
+    type: 'icon',
+    title: 'Italic',
+    value: 'format-italic',
+    action: actions.italic,
+  },
+  underline: {
+    id: DocumentCommandId.UNDERLINE,
+    type: 'icon',
+    title: 'Underline',
+    value: 'format-underline',
+    action: actions.underline,
+  },
+  strikeThrough: {
+    id: DocumentCommandId.STRIKE_THROUGH,
+    type: 'icon',
+    title: 'Strike through',
+    value: 'format-strikethrough',
+    action: actions.strikeThrough,
+  },
+  subscript: {
+    id: DocumentCommandId.SUBSCRIPT,
+    type: 'icon',
+    title: 'Subscript',
+    value: 'subscript',
+    action: actions.subscript,
+  },
+  superscript: {
+    id: DocumentCommandId.SUPERSCRIPT,
+    type: 'icon',
+    title: 'Superscript',
+    value: 'superscript',
+    action: actions.superscript,
+  },
+  removeFormat: {
+    id: DocumentCommandId.REMOVE_FORMAT,
+    type: 'icon',
+    title: 'Remove format',
+    value: 'format-clear',
+    action: actions.removeFormat,
+  },
+  fontSize: ({ name, value }: Option, index: number): ToolbarRenderItem => ({
+    id: `${DocumentCommandId.FONT_SIZE}.${index}`,
+    type: 'icon',
+    title: name,
+    value,
+    action: actions.fontSize(index + 1),
+  }),
+  fontName: ({ name, value }: Option): ToolbarRenderItem => ({
+    id: `${DocumentCommandId.FONT_NAME}.${value}`,
+    type: 'text' as const,
+    name,
+    value,
+    style: { fontFamily: value },
+    action: actions.fontName(value),
+  }),
+  foreColor: ({ name, value }: Option): ToolbarRenderItem => ({
+    id: `${DocumentCommandId.FORE_COLOR}.${value}`,
+    type: 'color',
+    title: name,
+    value,
+    action: actions.foreColor(value),
+  }),
+  backColor: ({ value, name }: Option): ToolbarRenderItem => ({
+    id: `${DocumentCommandId.BACK_COLOR}.${value}`,
+    type: 'color',
+    title: name,
+    value,
+    action: actions.backColor(value),
+  }),
+  blockquote: {
+    id: `${DocumentCommandId.FORMAT_BLOCK}.blockquote`,
+    type: 'icon',
+    title: 'Block quote',
+    value: 'format-quote',
+    action: actions.formatBlock('blockquote'),
+  },
+  insertHorizontalRule: {
+    id: DocumentCommandId.INSERT_HORIZONTAL_RULE,
+    type: 'icon',
+    title: 'Rule',
+    value: 'horizontal-rule',
+    action: actions.insertHorizontalRule,
+  },
+  insertOrderedList: {
+    id: DocumentCommandId.INSERT_ORDERED_LIST,
+    type: 'icon',
+    title: 'Numbered List',
+    value: 'format-list-numbered',
+    action: actions.orderedList,
+  },
+  insertUnorderedList: {
+    id: DocumentCommandId.INSERT_UNORDERED_LIST,
+    type: 'icon',
+    title: 'Bullet List',
+    value: 'format-list-bulleted',
+    action: actions.unorderedList,
+  },
+  indent: {
+    id: DocumentCommandId.INDENT,
+    type: 'icon',
+    title: 'Increase indent',
+    value: 'format-indent-increase',
+    action: actions.indent,
+  },
+  outdent: {
+    id: DocumentCommandId.OUTDENT,
+    type: 'icon',
+    title: 'Decrease indent',
+    value: 'format-indent-decrease',
+    action: actions.outdent,
+  },
+  justifyLeft: {
+    id: DocumentCommandId.JUSTIFY_LEFT,
+    type: 'icon',
+    title: 'Align left',
+    value: 'format-align-left',
+    action: actions.justifyLeft,
+  },
+  justifyCenter: {
+    id: DocumentCommandId.JUSTIFY_CENTER,
+    type: 'icon',
+    title: 'Align center',
+    value: 'format-align-center',
+    action: actions.justifyCenter,
+  },
+  justifyRight: {
+    id: DocumentCommandId.JUSTIFY_RIGHT,
+    type: 'icon',
+    title: 'Align right',
+    value: 'format-align-right',
+    action: actions.justifyRight,
+  },
+  justifyFull: {
+    id: DocumentCommandId.JUSTIFY_FULL,
+    type: 'icon',
+    title: 'Justify',
+    value: 'format-align-justify',
+    action: actions.justifyFull,
+  },
+  insertCheckboxList: {
+    id: `${DocumentCommandId.FORMAT_BLOCK}.insertCheckboxList`,
+    type: 'icon',
+    value: 'checklist',
+    action: {
+      type: 'insertCheckboxList',
+      meta: { focusable: true, selectable: true },
+    },
+  },
+  code: {
+    id: `${DocumentCommandId.FORMAT_BLOCK}.code`,
+    type: 'icon',
+    title: 'Code',
+    value: 'code',
+    action: {
+      type: 'insertCode',
+      meta: { focusable: true, selectable: true },
+    },
+  },
+  unlink: {
+    id: DocumentCommandId.UNLINK,
+    type: 'icon',
+    value: 'link-off',
+    title: 'Remove link',
+    action: actions.unlink,
+  },
+  createLink: {
+    id: DocumentCommandId.CREATE_LINK,
+    type: 'custom',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        placeholder: 'Type link href...',
+        onSubmit: ({ dispatch, value }) => {
+          dispatch(actions.createLink(value));
+          onClose?.();
+        },
+      }),
+  },
+  insertImage: {
+    id: DocumentCommandId.INSERT_IMAGE,
+    type: 'custom',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        placeholder: 'Type image URL...',
+        onSubmit: ({ dispatch, value }) => {
+          dispatch(actions.insertImage(value));
+          onClose?.();
+        },
+      }),
+  },
+  insertHtml: {
+    id: DocumentCommandId.INSERT_HTML,
+    type: 'custom',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        placeholder: 'Type HTML...',
+        onSubmit: ({ dispatch, value }) => {
+          dispatch(actions.insertHTML(value));
+          onClose?.();
+        },
+      }),
+  },
+  insertText: {
+    id: DocumentCommandId.INSERT_TEXT,
+    type: 'custom',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        placeholder: 'Type text...',
+        onSubmit: ({ dispatch, value }) => {
+          dispatch(actions.insertText(value));
+          onClose?.();
+        },
+      }),
+  },
+} as const;
+
+export const createConfig = (): ToolbarRenderItem[] => [
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [fields.undo, fields.redo],
+  },
+  {
+    id: `${DocumentCommandId.FORMAT_BLOCK}.heading`,
+    type: 'text',
+    role: 'menu',
+    defaultValue: 'p',
+    title: 'Heading',
+    items: headingOptions.map(fields.heading),
+    popoverProps: {
+      containerStyle: styles.textContainer,
+    },
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [
+      fields.bold,
+      fields.italic,
+      fields.underline,
+      fields.strikeThrough,
+      fields.subscript,
+      fields.superscript,
+      fields.removeFormat,
+    ],
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [
+      {
+        id: DocumentCommandId.FONT_SIZE,
+        type: 'icon',
+        role: 'menu',
+        title: 'Font size',
+        value: 'format-size',
+        items: fontSizeOptions.map(fields.fontSize),
+      },
+      {
+        id: DocumentCommandId.FONT_NAME,
+        type: 'icon',
+        role: 'menu',
+        title: 'Font family',
+        value: 'font-download',
+        items: fontNameOptions.map(fields.fontName),
+        popoverProps: {
+          containerStyle: styles.textContainer,
+        },
+      },
+      {
+        id: DocumentCommandId.FORE_COLOR,
+        type: 'icon',
+        role: 'menu',
+        title: 'Font color',
+        value: 'format-color-text',
+        items: colorOptions.map(fields.foreColor),
+        popoverProps: {
+          containerStyle: styles.paletteContainer,
+        },
+      },
+      {
+        id: DocumentCommandId.BACK_COLOR,
+        type: 'icon',
+        role: 'menu',
+        title: 'Font background color',
+        value: 'format-color-fill',
+        items: colorOptions.map(fields.backColor),
+        popoverProps: {
+          containerStyle: styles.paletteContainer,
+        },
+      },
+    ],
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [fields.blockquote, fields.code, fields.insertHorizontalRule],
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [
+      fields.insertOrderedList,
+      fields.insertUnorderedList,
+      fields.insertCheckboxList,
+    ],
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [
+      fields.indent,
+      fields.outdent,
+      {
+        id: 'justifyText',
+        type: 'icon',
+        role: 'menu',
+        title: 'Text alignment',
+        closeable: true,
+        defaultValue: fields.justifyLeft.value,
+        items: [
+          fields.justifyLeft,
+          fields.justifyCenter,
+          fields.justifyRight,
+          fields.justifyFull,
+        ],
+      },
+    ],
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [
+      {
+        id: DocumentCommandId.CREATE_LINK,
+        type: 'icon',
+        value: 'link',
+        title: 'Create link',
+        closeable: true,
+        items: [fields.createLink],
+      },
+      fields.unlink,
+      {
+        id: DocumentCommandId.INSERT_IMAGE,
+        type: 'icon',
+        value: 'insert-photo',
+        title: 'Insert image',
+        closeable: true,
+        items: [fields.insertImage],
+      },
+      {
+        id: DocumentCommandId.INSERT_HTML,
+        type: 'icon',
+        value: 'html',
+        title: 'Insert HTML',
+        closeable: true,
+        items: [fields.insertHtml],
+      },
+      {
+        id: DocumentCommandId.INSERT_TEXT,
+        type: 'icon',
+        value: 'abc',
+        title: 'Insert text',
+        closeable: true,
+        items: [fields.insertText],
+      },
+    ],
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [
+      fields.copy,
+      fields.cut,
+      fields.selectAll,
+      fields.delete,
+      fields.forwardDelete,
+    ],
+  },
+];
+
+const styles = StyleSheet.create({
+  paletteContainer: {
+    maxWidth: 100,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  textContainer: {
+    gap: 4,
+    padding: 4,
+  },
+});
