@@ -73,13 +73,11 @@ export const ToolbarPopover = (props: ToolbarPopoverProps) => {
 
   const measureInWindow = useCallback(
     (ref: React.RefObject<React.ComponentRef<View> | null>) => {
-      const { promise, resolve } = Promise.withResolvers<LayoutRectangle>();
-
-      ref.current?.measureInWindow((x, y, width, height) =>
-        resolve({ x, y, width, height })
-      );
-
-      return promise;
+      return new Promise<LayoutRectangle>((resolve) => {
+        ref.current?.measureInWindow((x, y, width, height) =>
+          resolve({ x, y, width, height })
+        );
+      });
     },
     []
   );
