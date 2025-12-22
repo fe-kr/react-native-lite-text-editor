@@ -1,11 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  ActivityIndicator,
-  Platform,
-  Linking,
-} from 'react-native';
+import { StyleSheet, View, Linking, ActivityIndicator } from 'react-native';
 import {
   TextEditor,
   Toolbar,
@@ -15,7 +9,7 @@ import {
   type Event,
   type EventData,
 } from 'react-native-lite-text-editor';
-import { MaterialIcons } from '@react-native-vector-icons/material-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { defaultStyles } from './config/styles';
 import { content } from './config/content';
@@ -27,6 +21,7 @@ import { ToolbarItem } from './components/toolbar-item';
 export default function App() {
   const editorRef = useRef<ExtendedWebView>(null!);
   const [state, setState] = useState<CommandsInfo>(null!);
+  const [loaded, error] = useFonts(MaterialIcons.font);
 
   const logger = useCallback(
     (data: unknown, level: 'log' | 'warn' | 'error' = 'log') => {
@@ -62,11 +57,7 @@ export default function App() {
     [logger]
   );
 
-  const [isLoading] = useFonts({
-    [fontKey]: require('@react-native-vector-icons/material-icons/fonts/MaterialIcons.ttf'),
-  });
-
-  if (!isLoading) {
+  if (!loaded && !error) {
     return (
       <View style={styles.progress}>
         <ActivityIndicator size="large" />
@@ -157,10 +148,5 @@ const theme: ToolbarProps['theme'] = {
     },
   },
 };
-
-const fontKey = Platform.select({
-  web: 'MaterialIcons-Regular',
-  default: 'MaterialIcons',
-});
 
 const ToolbarSeparator = () => <View style={styles.separator} />;
