@@ -31,6 +31,41 @@ const fields = {
     value: 'redo',
     action: actions.redo,
   },
+  copy: {
+    id: DocumentCommandId.COPY,
+    type: 'icon',
+    title: 'Copy',
+    value: 'content-copy',
+    action: actions.copy,
+  },
+  cut: {
+    id: DocumentCommandId.CUT,
+    type: 'icon',
+    title: 'Cut',
+    value: 'content-cut',
+    action: actions.cut,
+  },
+  selectAll: {
+    id: DocumentCommandId.SELECT_ALL,
+    type: 'icon',
+    title: 'Select All',
+    value: 'select-all',
+    action: actions.selectAll,
+  },
+  delete: {
+    id: DocumentCommandId.DELETE,
+    type: 'icon',
+    title: 'Delete',
+    value: 'delete',
+    action: actions.remove,
+  },
+  forwardDelete: {
+    id: DocumentCommandId.FORWARD_DELETE,
+    type: 'icon',
+    title: 'Forward Delete',
+    value: 'keyboard-backspace',
+    action: actions.forwardDelete,
+  },
   heading: ({ name, value }: Option<HTMLElementTag>) => ({
     id: `${DocumentCommandId.FORMAT_BLOCK}.${value}`,
     type: 'text' as const,
@@ -205,12 +240,18 @@ const fields = {
       meta: { focusable: true, selectable: true },
     },
   },
+  unlink: {
+    id: DocumentCommandId.UNLINK,
+    type: 'icon',
+    value: 'link-off',
+    title: 'Remove link',
+    action: actions.unlink,
+  },
   createLink: {
     id: DocumentCommandId.CREATE_LINK,
     type: 'custom',
     Component: ({ onClose }: CustomToolbarItem) =>
       createElement(FormInput, {
-        icon: 'check',
         placeholder: 'Type link href...',
         onSubmit: ({ dispatch, value }) => {
           dispatch(actions.createLink(value));
@@ -223,10 +264,33 @@ const fields = {
     type: 'custom',
     Component: ({ onClose }: CustomToolbarItem) =>
       createElement(FormInput, {
-        icon: 'check',
         placeholder: 'Type image URL...',
         onSubmit: ({ dispatch, value }) => {
           dispatch(actions.insertImage(value));
+          onClose?.();
+        },
+      }),
+  },
+  insertHtml: {
+    id: DocumentCommandId.INSERT_HTML,
+    type: 'custom',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        placeholder: 'Type HTML...',
+        onSubmit: ({ dispatch, value }) => {
+          dispatch(actions.insertHTML(value));
+          onClose?.();
+        },
+      }),
+  },
+  insertText: {
+    id: DocumentCommandId.INSERT_TEXT,
+    type: 'custom',
+    Component: ({ onClose }: CustomToolbarItem) =>
+      createElement(FormInput, {
+        placeholder: 'Type text...',
+        onSubmit: ({ dispatch, value }) => {
+          dispatch(actions.insertText(value));
           onClose?.();
         },
       }),
@@ -236,6 +300,7 @@ const fields = {
 export const createConfig = (): ToolbarRenderItem[] => [
   {
     type: 'container',
+    containerStyle: styles.rowContainer,
     items: [fields.undo, fields.redo],
   },
   {
@@ -244,11 +309,14 @@ export const createConfig = (): ToolbarRenderItem[] => [
     role: 'menu',
     defaultValue: 'p',
     title: 'Heading',
-    containerStyle: styles.textContainer,
     items: headingOptions.map(fields.heading),
+    popoverProps: {
+      containerStyle: styles.textContainer,
+    },
   },
   {
     type: 'container',
+    containerStyle: styles.rowContainer,
     items: [
       fields.bold,
       fields.italic,
@@ -261,6 +329,7 @@ export const createConfig = (): ToolbarRenderItem[] => [
   },
   {
     type: 'container',
+    containerStyle: styles.rowContainer,
     items: [
       {
         id: DocumentCommandId.FONT_SIZE,
@@ -276,8 +345,10 @@ export const createConfig = (): ToolbarRenderItem[] => [
         role: 'menu',
         title: 'Font family',
         value: 'font-download',
-        containerStyle: styles.textContainer,
         items: fontNameOptions.map(fields.fontName),
+        popoverProps: {
+          containerStyle: styles.textContainer,
+        },
       },
       {
         id: DocumentCommandId.FORE_COLOR,
@@ -285,8 +356,10 @@ export const createConfig = (): ToolbarRenderItem[] => [
         role: 'menu',
         title: 'Font color',
         value: 'format-color-text',
-        containerStyle: styles.paletteContainer,
         items: colorOptions.map(fields.foreColor),
+        popoverProps: {
+          containerStyle: styles.paletteContainer,
+        },
       },
       {
         id: DocumentCommandId.BACK_COLOR,
@@ -294,17 +367,21 @@ export const createConfig = (): ToolbarRenderItem[] => [
         role: 'menu',
         title: 'Font background color',
         value: 'format-color-fill',
-        containerStyle: styles.paletteContainer,
         items: colorOptions.map(fields.backColor),
+        popoverProps: {
+          containerStyle: styles.paletteContainer,
+        },
       },
     ],
   },
   {
     type: 'container',
+    containerStyle: styles.rowContainer,
     items: [fields.blockquote, fields.code, fields.insertHorizontalRule],
   },
   {
     type: 'container',
+    containerStyle: styles.rowContainer,
     items: [
       fields.insertOrderedList,
       fields.insertUnorderedList,
@@ -313,6 +390,7 @@ export const createConfig = (): ToolbarRenderItem[] => [
   },
   {
     type: 'container',
+    containerStyle: styles.rowContainer,
     items: [
       fields.indent,
       fields.outdent,
@@ -334,31 +412,69 @@ export const createConfig = (): ToolbarRenderItem[] => [
   },
   {
     type: 'container',
+    containerStyle: styles.rowContainer,
     items: [
       {
         id: DocumentCommandId.CREATE_LINK,
         type: 'icon',
         value: 'link',
+        title: 'Create link',
         closeable: true,
         items: [fields.createLink],
       },
+      fields.unlink,
       {
         id: DocumentCommandId.INSERT_IMAGE,
         type: 'icon',
         value: 'insert-photo',
+        title: 'Insert image',
         closeable: true,
         items: [fields.insertImage],
       },
+      {
+        id: DocumentCommandId.INSERT_HTML,
+        type: 'icon',
+        value: 'html',
+        title: 'Insert HTML',
+        closeable: true,
+        items: [fields.insertHtml],
+      },
+      {
+        id: DocumentCommandId.INSERT_TEXT,
+        type: 'icon',
+        value: 'abc',
+        title: 'Insert text',
+        closeable: true,
+        items: [fields.insertText],
+      },
+    ],
+  },
+  {
+    type: 'container',
+    containerStyle: styles.rowContainer,
+    items: [
+      fields.copy,
+      fields.cut,
+      fields.selectAll,
+      fields.delete,
+      fields.forwardDelete,
     ],
   },
 ];
 
 const styles = StyleSheet.create({
   paletteContainer: {
-    maxWidth: 110,
+    maxWidth: 100,
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
     flexWrap: 'wrap',
+    gap: 4,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
   textContainer: {
     gap: 4,

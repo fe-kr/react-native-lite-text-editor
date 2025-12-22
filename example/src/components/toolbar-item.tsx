@@ -7,7 +7,7 @@ import { StyleSheet, Text } from 'react-native';
 import { useState } from 'react';
 
 export const ToolbarItem = ({ title, role, ...props }: ToolbarItemProps) => {
-  const { Icon, Popover } = useToolbarStyle();
+  const { theme, Icon, Popover } = useToolbarStyle();
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,8 +27,8 @@ export const ToolbarItem = ({ title, role, ...props }: ToolbarItemProps) => {
         >
           {role === 'menu' && (
             <Icon
+              {...theme.components.Icon}
               name="arrow-drop-down"
-              size={20}
               style={styles.dropdownIcon}
             />
           )}

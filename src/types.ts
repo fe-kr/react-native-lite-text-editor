@@ -12,9 +12,12 @@ export type EditorEvent = ValueOf<typeof EditorEvent>;
 export type ValueOf<T extends object> = T[keyof T];
 export type Callback = (...args: any[]) => void;
 export type Constructor<T = any, P = any> = new (...args: P[]) => T;
+export type DeepPartial<T extends object> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 
 export interface ExtendedWebView extends WebView {
-  focus: Callback;
+  focus: (position?: 'start' | 'end') => void;
   dispatch: (action: Action) => void;
 }
 

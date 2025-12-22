@@ -96,11 +96,6 @@ export const unlink: Action = {
   meta: { focusable: true, selectable: true },
 };
 
-export const enableObjectResizing: Action = {
-  type: DocumentCommandId.ENABLE_OBJECT_RESIZING,
-  meta: { focusable: true, selectable: true },
-};
-
 export const select: Action = {
   type: InnerDocumentCommandId.SELECT,
   meta: { selectable: true },
@@ -131,33 +126,13 @@ export const decreaseFontSize: Action = {
   meta: { focusable: true, selectable: true },
 };
 
-export const enableAbsolutePositionEditor: Action = {
-  type: DocumentCommandId.ENABLE_ABSOLUTE_POSITION_EDITOR,
-  meta: { focusable: true, selectable: true },
-};
-
-export const enableInlineTableEditing: Action = {
-  type: DocumentCommandId.ENABLE_INLINE_TABLE_EDITING,
-  meta: { focusable: true, selectable: true },
-};
-
 export const forwardDelete: Action = {
   type: DocumentCommandId.FORWARD_DELETE,
   meta: { focusable: true, selectable: true },
 };
 
-export const insertBrOnReturn: Action = {
-  type: DocumentCommandId.INSERT_BR_ON_RETURN,
-  meta: { focusable: true, selectable: true },
-};
-
 export const insertParagraph: Action = {
   type: DocumentCommandId.INSERT_PARAGRAPH,
-  meta: { focusable: true, selectable: true },
-};
-
-export const paste: Action = {
-  type: DocumentCommandId.PASTE,
   meta: { focusable: true, selectable: true },
 };
 
@@ -220,12 +195,6 @@ export const createLink: ActionCreator<string> = (payload, meta) => ({
   type: DocumentCommandId.CREATE_LINK,
   payload,
   meta: meta ?? { focusable: true, selectable: true },
-});
-
-export const contentReadOnly: ActionCreator<boolean> = (payload, meta) => ({
-  type: DocumentCommandId.CONTENT_READ_ONLY,
-  payload,
-  meta,
 });
 
 export const insertHTML: ActionCreator<string> = (payload, meta) => ({

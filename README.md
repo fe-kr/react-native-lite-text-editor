@@ -19,8 +19,6 @@ _Requires **react-native-webview** as a peer dependency_
 ```js
 import { TextEditor, Toolbar } from 'react-native-lite-text-editor';
 
-// see full example in `example/src/App.tsx`
-
 export default function App() {
   const editorRef = useRef(null);
   const [data, setData] = useState(null);
@@ -43,8 +41,7 @@ export default function App() {
 }
 
 ```
-
-
+_For a complete example, see  [**example/src/App.tsx**](https://github.com/fe-kr/react-native-lite-text-editor/blob/main/example/src/App.tsx)_
 
 ## API Overview
 
@@ -64,7 +61,7 @@ export default function App() {
 | **commands** | `DocumentCommandId[]` | `[]` | Enables built-in document commands (bold, list, link, etc.). | Toolbar use these ids. All commands are enabled, if omitted |
 | **extraCommands** | `string[]` | `[]` | Register custom commands. | Should implements DocumentCommand interface |
 | **styles** | `string` (CSS) | `''` | CSS injected after `defaultStyles` to override appearance. | Use to match app typography and spacing. |
-| **defaultStyles** | `string` (CSS) | `''` | Base CSS applied before `styles`. | Keep minimal; override with `styles`. |
+| **defaultStyles** | `string` (CSS) | `''` | Base CSS applied before `styles`. | Override with `styles`. |
 | **onBlur** | `(e) => void` | `-` | Fired when editor loses focus. | Event contains current HTML. |
 | **onFocus** | `(e) => void` | `-` | Fired when editor gains focus. |  Event contains current HTML. |
 | **onChange** | `(e) => void` | `-` | Fired when content changes. | Event contains current HTML. |
@@ -84,16 +81,13 @@ export default function App() {
 |---|---:|---:|---|---|
 | **data** | `CommandsInfo[]` | `-` | Array of command info objects used to render toolbar items. ||
 | **config** | `ToolbarRenderItem[]` | `-` | Config for render toolbar. Includes items like `'container'`, `'icon'`, `'color'`, `'text'`, `'custom'`. ||
-| **renderItem** | `ListRenderItem<ToolbarRenderItem>` | internal renderer | Custom renderer for toolbar cells; receives config item. | |
-| **editorRef** | `ExtendedWebViewRef` | `-` | Reference used to send commands to the editor. ||
-| **tintColor** | `string` | `rgb(0, 0, 0)` | Color used for inactive icons and text in the toolbar. |
-| **activeTintColor** | `string` | `rgb(77, 77, 230)` | Color used for active/selected icons and labels. |
-| **iconSize** | `number` | `20` | Size in pixels for toolbar icons. |
+| **renderItem** | `ListRenderItem<ToolbarRenderItem>` | internal | Custom renderer for toolbar cells; receives config item. | |
+| **editorRef** | `ExtendedWebViewRef` | `-` | Reference used to send commands to the editor. |
+| **theme** | `ToolbarTheme` | internal | Theme object controlling palette colors, opacities, and component-level default props. |
 | **Icon** | `React.ComponentType<IconProps>` | `-` | Component used to render icons; receives `IconProps`. |
-| **dropdownIconProps** | `IconProps` (optional) | `-` | Props forwarded to the dropdown indicator icon. |
-| **Popover** | `React.ComponentType<PopoverProps>` | built-in Popover | Component used for popovers (e.g., color pickers, menus). |
-| **popoverProps** | `Partial<PopoverProps>` (optional) | `-` | Default props forwarded to the `Popover` component. |
-| **tooltipProps** | `Partial<TooltipProps>` (optional) | `-` | Default props forwarded to tooltips for toolbar items. |
+| **Item** | `React.ComponentType<ToolbarItemProps>` | internal | Component used to render each toolbar item. | Use to customize layout, touch behavior, and accessibility attributes. |
+| **Popover** | `React.ComponentType<PopoverProps>` | internal | Component used for popovers (e.g., color pickers, menus). |
+
 ---
 
 ## Contributing

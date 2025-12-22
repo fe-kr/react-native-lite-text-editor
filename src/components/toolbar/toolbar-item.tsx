@@ -45,23 +45,25 @@ export const ToolbarItem = ({
   const color = selected
     ? theme.palette.selectedTintColor
     : theme.palette.tintColor;
-  const borderColor = selected ? theme.palette.selectedTintColor : undefined;
-  const { size } = theme.components.Icon ?? {};
+  const { size } = theme.components.Icon;
 
   const createStyle = useCallback(
     ({ pressed }: PressableStateCallbackType) => [
       pressed && !disabled && { opacity: theme.palette.activeOpacity },
       disabled && { opacity: theme.palette.disabledOpacity },
-      styles.container,
-      ...(type === 'color' ? [styles.colorContainer, { borderColor }] : []),
+      type === 'color' && {
+        borderWidth: StyleSheet.hairlineWidth,
+        borderColor: selected ? theme.palette.selectedTintColor : 'transparent',
+      },
       containerStyle,
     ],
     [
       disabled,
       theme.palette.activeOpacity,
       theme.palette.disabledOpacity,
+      theme.palette.selectedTintColor,
       type,
-      borderColor,
+      selected,
       containerStyle,
     ]
   );
@@ -101,16 +103,3 @@ export const ToolbarItem = ({
     </Pressable>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 4,
-  },
-  colorContainer: {
-    borderWidth: 2,
-    borderColor: 'transparent',
-    padding: 1,
-  },
-});

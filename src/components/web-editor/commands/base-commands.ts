@@ -126,10 +126,6 @@ export class InsertText extends DocumentCommand {
   readonly id = DocumentCommandId.INSERT_TEXT;
 }
 
-export class ContentReadOnly extends DocumentCommand {
-  readonly id = DocumentCommandId.CONTENT_READ_ONLY;
-}
-
 export class InsertImage extends DocumentCommand {
   readonly id = DocumentCommandId.INSERT_IMAGE;
 }
@@ -138,20 +134,8 @@ export class Unlink extends DocumentCommand {
   readonly id = DocumentCommandId.UNLINK;
 }
 
-export class EnableObjectResizing extends DocumentCommand {
-  readonly id = DocumentCommandId.ENABLE_OBJECT_RESIZING;
-}
-
-export class InsertBrOnReturn extends DocumentCommand {
-  readonly id = DocumentCommandId.INSERT_BR_ON_RETURN;
-}
-
 export class InsertParagraph extends DocumentCommand {
   readonly id = DocumentCommandId.INSERT_PARAGRAPH;
-}
-
-export class Paste extends DocumentCommand {
-  readonly id = DocumentCommandId.PASTE;
 }
 
 export class Copy extends DocumentCommand {
@@ -184,14 +168,6 @@ export class IncreaseFontSize extends DocumentCommand {
 
 export class DefaultParagraphSeparator extends DocumentCommand {
   readonly id = DocumentCommandId.DEFAULT_PARAGRAPH_SEPARATOR;
-}
-
-export class EnableAbsolutePositionEditor extends DocumentCommand {
-  readonly id = DocumentCommandId.ENABLE_ABSOLUTE_POSITION_EDITOR;
-}
-
-export class EnableInlineTableEditing extends DocumentCommand {
-  readonly id = DocumentCommandId.ENABLE_INLINE_TABLE_EDITING;
 }
 
 export class StyleWithCSS extends DocumentCommand {

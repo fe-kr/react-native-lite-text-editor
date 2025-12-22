@@ -1,10 +1,4 @@
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -35,9 +29,9 @@ export interface ToolbarPopoverProps extends ModalProps {
   leaveAnimation?: Animated.TimingAnimationConfig;
   onShow?: Callback;
   onDismiss?: Callback;
+  scrollableProps?: ScrollViewProps;
   wrapperStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
-  scrollableProps?: ScrollViewProps;
   overlayStyle?: StyleProp<ViewStyle>;
 }
 

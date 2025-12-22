@@ -1,8 +1,9 @@
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import type { Action, Callback, CommandsInfo } from '../../types';
 import { type ToolbarItemProps } from './toolbar-item';
 import { useToolbarStyle } from './toolbar-style-provider';
 import { useToolbarData } from './toolbar-data-provider';
+import type { ToolbarPopoverProps } from './toolbar-popover';
 
 export interface CustomToolbarItem {
   id?: string;
@@ -28,6 +29,7 @@ export interface NestedToolbarItem extends ToolbarItemProps {
   defaultValue?: string;
   closeable?: boolean;
   action?: Action;
+  popoverProps?: Partial<Omit<ToolbarPopoverProps, 'anchor' | 'children'>>;
   items: (DefaultToolbarItem | CustomToolbarItem | ContainerToolbarItem)[];
 }
 
@@ -51,7 +53,7 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
     const { items, containerStyle, onClose } = props;
 
     return (
-      <View style={[styles.rowContainer, containerStyle]}>
+      <View style={containerStyle}>
         {items?.map((item, i) => (
           <ToolbarRenderer onClose={onClose} {...item} key={item.id ?? i} />
         ))}
@@ -60,7 +62,15 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
   }
 
   if (ItemHelpers.isNested(props)) {
-    const { id, items, defaultValue, closeable, ...restProps } = props;
+    const {
+      id,
+      items,
+      defaultValue,
+      closeable,
+      action,
+      popoverProps,
+      ...restProps
+    } = props;
 
     const option = !restProps.value
       ? items.find(
@@ -81,8 +91,25 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
     return (
       <Popover
         {...theme.components.Popover}
+        {...popoverProps}
+        style={[theme.components.Popover.style, popoverProps?.style]}
+        wrapperStyle={[
+          theme.components.Popover.wrapperStyle,
+          popoverProps?.wrapperStyle,
+        ]}
+        containerStyle={[
+          theme.components.Popover.containerStyle,
+          popoverProps?.containerStyle,
+        ]}
+        overlayStyle={[
+          theme.components.Popover.overlayStyle,
+          popoverProps?.overlayStyle,
+        ]}
         visible={isOpen}
-        onDismiss={() => popover.close(id)}
+        onDismiss={() => {
+          popover.close(id);
+          popoverProps?.onDismiss?.();
+        }}
         anchor={
           <Item
             {...restProps}
@@ -92,7 +119,12 @@ export const ToolbarRenderer = (props: ToolbarRenderItem) => {
             onPress={() => popover.open(id)}
           />
         }
-        onShow={Platform.OS === 'web' ? focus : undefined}
+        onShow={() => {
+          if (action?.meta?.showKeyboard ?? Platform.OS === 'web') {
+            focus();
+          }
+          popoverProps?.onShow?.();
+        }}
       >
         {items.map((item, index) => (
           <ToolbarRenderer
@@ -168,9 +200,3 @@ export class ItemHelpers {
     return typeof enabled === 'boolean' && enabled;
   };
 }
-
-const styles = StyleSheet.create({
-  rowContainer: {
-    flexDirection: 'row',
-  },
-});

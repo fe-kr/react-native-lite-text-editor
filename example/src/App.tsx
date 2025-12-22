@@ -141,13 +141,13 @@ const styles = StyleSheet.create({
     shadowColor: '#ccced1',
     shadowRadius: 5,
     elevation: 5,
+    padding: 4,
   },
 });
 
 const toolbarConfig = createConfig();
 
 const theme: ToolbarProps['theme'] = {
-  palette: {},
   components: {
     Icon: {
       size: 20,

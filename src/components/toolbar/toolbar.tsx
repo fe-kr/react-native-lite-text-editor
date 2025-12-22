@@ -9,16 +9,15 @@ import type { CommandsInfo, ExtendedWebView } from '../../types';
 import { memo } from 'react';
 import { ToolbarPopover } from './toolbar-popover';
 import {
-  type ToolbarStyleParams,
   ToolbarStyleProvider,
-  type ToolbarTheme,
+  type ToolbarStyleProviderProps,
 } from './toolbar-style-provider';
 import { ToolbarItem } from './toolbar-item';
 import { ToolbarDataProvider } from './toolbar-data-provider';
 
 export interface ToolbarProps<T = CommandsInfo>
   extends Omit<FlatListProps<ToolbarRenderItem>, 'data' | 'renderItem'>,
-    Partial<ToolbarStyleParams> {
+    Partial<Omit<ToolbarStyleProviderProps, 'children'>> {
   data: T;
   config?: ToolbarRenderItem[];
   renderItem?: ListRenderItem<ToolbarRenderItem>;
@@ -54,7 +53,7 @@ const Toolbar = <T extends CommandsInfo>(props: ToolbarProps<T>) => {
 
 const defaultProps = {
   editorRef: { current: null },
-  theme: {} as ToolbarTheme,
+  theme: {},
   data: {} as CommandsInfo,
   renderItem: ({ item }) => <ToolbarRenderer {...item} />,
   Icon: Text,

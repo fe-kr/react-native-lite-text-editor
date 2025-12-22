@@ -14,15 +14,11 @@ import {
 } from 'react-native-lite-text-editor';
 
 export interface FormInputProps extends TextInputProps {
-  icon?: string;
-  inputStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   onSubmit: (data: ToolbarDataParams & { value: string }) => void;
 }
 
 export const FormInput = ({
-  defaultValue,
-  icon,
   containerStyle,
   onSubmit,
   style,
@@ -31,7 +27,7 @@ export const FormInput = ({
   const { Icon, theme } = useToolbarStyle();
   const toolbarData = useToolbarData();
 
-  const [value, setValue] = useState(defaultValue ?? '');
+  const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const { tintColor, selectedTintColor } = theme.palette;
@@ -56,7 +52,8 @@ export const FormInput = ({
         disabled={!value}
       >
         <Icon
-          name={icon!}
+          {...theme.components.Icon}
+          name="check"
           color={isFocused && value ? selectedTintColor : tintColor}
         />
       </Pressable>

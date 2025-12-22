@@ -151,13 +151,13 @@ export const TextEditor = forwardRef<ExtendedWebView, TextEditorProps>(
       ref.current?.postMessage(message);
     }, []);
 
-    const focus = useCallback(
-      (position?: 'start' | 'end') => {
+    const focus: ExtendedWebView['focus'] = useCallback(
+      (position = 'start') => {
         containerRef.current?.focus();
 
         ref.current?.requestFocus();
 
-        dispatch(focusAction(position!));
+        dispatch(focusAction(position));
       },
       [dispatch]
     );
